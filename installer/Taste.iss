@@ -1,5 +1,7 @@
 #define AppName    "Taste"
-#define AppVersion "2.1"
+#ifndef AppVersion
+  #define AppVersion "1.0.0"
+#endif
 #define AppExe     "Taste.exe"
 #define PublishDir "..\bin\Release\net8.0-windows\win-x64\publish"
 
