@@ -1,0 +1,1613 @@
+<Window x:Class="Taste.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Taste.ViewModels"
+        xmlns:conv="clr-namespace:Taste.Converters"
+        xmlns:ctrl="clr-namespace:Taste.Controls"
+        Title="Taste"
+        Icon="Assets/icon.png"
+        Width="1200" Height="800"
+        MinWidth="600" MinHeight="400"
+        Background="{StaticResource BgBase}"
+        FontFamily="{StaticResource FontPrimary}"
+        WindowStartupLocation="CenterScreen"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        RenderOptions.BitmapScalingMode="HighQuality">
+
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:BoolToVisibilityConverter x:Key="InvBoolToVis" Invert="True"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+        <conv:NullToVisibilityConverter x:Key="NullToHide" CollapseWhenNull="False"/>
+
+        <ctrl:BindingProxy x:Key="Proxy"
+                           Data="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext}"/>
+
+        <!-- Shared icon button style -->
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource FgIcon}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark context menu -->
+        <Style TargetType="ContextMenu">
+            <Setter Property="Background" Value="{StaticResource BgPopup}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="{StaticResource PaddingContextMenu}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Opacity="0.5"/>
+                            </Border.Effect>
+                            <ItemsPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="MenuItem">
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="{StaticResource PaddingMenuItem}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Grid>
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                    Padding="{TemplateBinding Padding}" Margin="{StaticResource MarginMenuItem}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="Check" Text="✓" Grid.Column="0"
+                                               Foreground="{StaticResource Accent}" FontSize="11"
+                                               VerticalAlignment="Center"
+                                               Visibility="Collapsed"/>
+                                    <ContentPresenter Grid.Column="1" Margin="6,0,0,0"
+                                                      ContentSource="Header"
+                                                      VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <!-- Submenu flies out to the left so it stays inside the window instead of
+                                 spilling past the right edge, where the overflow (…) menu is anchored. -->
+                            <Popup x:Name="Popup" Placement="Left" AllowsTransparency="True" Focusable="False"
+                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                   PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}">
+                                <Border Background="{StaticResource BgPopup}" BorderBrush="{StaticResource BorderStrong}"
+                                        BorderThickness="1" CornerRadius="6" Padding="{StaticResource PaddingContextMenu}">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Opacity="0.5"/>
+                                    </Border.Effect>
+                                    <ItemsPresenter/>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                <Setter TargetName="Bd" Property="CornerRadius" Value="4"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider sub-styles (used by size popup) -->
+        <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Height="3" Background="{TemplateBinding Background}" CornerRadius="1.5"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SliderThumb" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="Bd" Width="16" Height="16" CornerRadius="7"
+                                Background="{StaticResource FgPrimary}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource FgInput}"/>
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource FgInput}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ColumnResizeThumb" TargetType="Thumb">
+            <Setter Property="Width" Value="5"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="SizeWE"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="{TemplateBinding Background}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DarkSlider" TargetType="Slider">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="5"/>
+                            </Grid.RowDefinitions>
+                            <!-- Track -->
+                            <Track x:Name="PART_Track" Grid.Row="0">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge"
+                                                  Style="{StaticResource SliderRepeatButton}"
+                                                  Background="{StaticResource Accent}"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge"
+                                                  Style="{StaticResource SliderRepeatButton}"
+                                                  Background="{StaticResource BorderStrong}"/>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource SliderThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                            <!-- Snap-point tick marks: 7px margin = half thumb width, aligns ticks to track -->
+                            <!-- 7 equal columns spanning 100→520; ticks at each snap point (100,160,...,520) -->
+                            <Grid Grid.Row="1" Margin="7,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="60*"/>
+                                    <ColumnDefinition Width="60*"/>
+                                </Grid.ColumnDefinitions>
+                                <Rectangle Grid.Column="0" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Left"  VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="0" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="1" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="2" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="3" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="4" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="5" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <Rectangle Grid.Column="6" Width="1" Height="4" Fill="{StaticResource FgDim}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Breadcrumb segment button -->
+        <Style x:Key="BreadcrumbSegmentButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource FgSecondary}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Padding="6,2">
+                            <TextBlock x:Name="Txt"
+                                       Text="{TemplateBinding Content}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       FontSize="{TemplateBinding FontSize}"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                <Setter TargetName="Txt" Property="Foreground" Value="{StaticResource FgInput}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- MenuItem without checkmark column — for context menus that have no checked items -->
+        <Style x:Key="PlainMenuItem" TargetType="MenuItem">
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="{StaticResource PaddingMenuItem}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}" Margin="{StaticResource MarginMenuItem}">
+                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                <Setter TargetName="Bd" Property="CornerRadius" Value="4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Right-click-on-empty-space menu for column view panels. Same "New Folder" action as the
+             overflow (…) menu, but scoped in code-behind to whichever panel was clicked, since column
+             view has no single "current folder" — see ColumnListBox_ContextMenuOpening. -->
+        <ContextMenu x:Key="ColumnEmptyMenu">
+            <MenuItem Header="New Folder" Style="{StaticResource PlainMenuItem}" Click="ColumnEmptyNewFolder_Click"/>
+        </ContextMenu>
+
+        <!-- Sidebar ListBoxItem style: hover highlight, left-aligned -->
+        <Style x:Key="SidebarItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="4,1"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ListBoxItem — no default blue chrome, hover/selected handled by tile overlay -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <ContentPresenter/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Minimal dark vertical scrollbar -->
+        <Style x:Key="ScrollBarThumb" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="{StaticResource FgMuted}" CornerRadius="1.5" Margin="2,2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ScrollEndButton" TargetType="Button">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="14"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="14"/>
+                            </Grid.RowDefinitions>
+                            <!-- Scroll to top -->
+                            <Button Grid.Row="0" Style="{StaticResource ScrollEndButton}"
+                                    Command="ScrollBar.ScrollToTopCommand">
+                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgMuted}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/scroll-up.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <!-- Track -->
+                            <Track x:Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ScrollBarThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                            <!-- Scroll to bottom -->
+                            <Button Grid.Row="2" Style="{StaticResource ScrollEndButton}"
+                                    Command="ScrollBar.ScrollToBottomCommand">
+                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgMuted}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/scroll-down.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Thumbnail DataTemplate -->
+        <DataTemplate x:Key="ThumbnailTemplate" DataType="{x:Type vm:FileItemViewModel}">
+            <StackPanel Orientation="Vertical" Margin="{StaticResource MarginTile}">
+
+                <Border Width="{Binding Data.ThumbnailSize, Source={StaticResource Proxy}}"
+                        Height="{Binding Data.ThumbnailSize, Source={StaticResource Proxy}}"
+                        Background="{StaticResource BgCard}"
+                        CornerRadius="8">
+                    <Grid>
+                        <Border CornerRadius="8"
+                                RenderOptions.BitmapScalingMode="HighQuality"
+                                Visibility="{Binding Thumbnail, Converter={StaticResource NullToVis}}">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding Thumbnail}" Stretch="Uniform"/>
+                            </Border.Background>
+                        </Border>
+
+                        <Border Visibility="{Binding Thumbnail, Converter={StaticResource NullToHide}}"
+                                Background="{StaticResource BgCard}" CornerRadius="8">
+                            <Grid>
+                                <Viewbox Margin="20" Visibility="{Binding IsDirectory, Converter={StaticResource BoolToVis}}">
+                                    <Image Source="/Assets/folder-icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Viewbox>
+                                <TextBlock Text="{Binding DisplayName}"
+                                           Foreground="{StaticResource FgPlaceholder}"
+                                           FontSize="10"
+                                           TextAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Padding="{StaticResource PaddingPlaceholder}"
+                                           Visibility="{Binding IsDirectory, Converter={StaticResource InvBoolToVis}}"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cloud badge -->
+                        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                Margin="{StaticResource MarginVideoBadge}" Padding="{StaticResource PaddingVideoBadge}"
+                                Background="{StaticResource VideoBadgeBg}" CornerRadius="8"
+                                Visibility="{Binding IsCloudPlaceholder, Converter={StaticResource BoolToVis}}">
+                            <Rectangle Width="10" Height="10" Fill="{StaticResource FgIconLight}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/cloud.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Border>
+
+                        <!-- Video badge -->
+                        <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                Margin="{StaticResource MarginVideoBadge}" Padding="{StaticResource PaddingVideoBadge}"
+                                Background="{StaticResource VideoBadgeBg}" CornerRadius="8"
+                                Visibility="{Binding IsVideo, Converter={StaticResource BoolToVis}}">
+                            <Rectangle Width="10" Height="10" Fill="{StaticResource FgIconLight}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/video.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Border>
+
+                        <!-- Selected overlay (sits on top, clipped to tile corners) -->
+                        <Border CornerRadius="8" IsHitTestVisible="False">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource SelectionBorder}"/>
+                                            <Setter Property="BorderThickness" Value="1.5"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
+                                            <Setter Property="Background" Value="#220078D4"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Fixed-height container so label↔rename swap never changes row height -->
+                <Grid Height="22" Margin="{StaticResource MarginTileLabel}"
+                      Width="{Binding Data.ThumbnailSize, Source={StaticResource Proxy}}">
+                    <TextBlock Text="{Binding DisplayName}"
+                               TextTrimming="CharacterEllipsis"
+                               TextAlignment="Center"
+                               Foreground="{StaticResource FgSecondary}"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Cursor="IBeam"
+                               Visibility="{Binding IsRenaming, Converter={StaticResource InvBoolToVis}}"
+                               MouseLeftButtonDown="FileNameLabel_MouseDown"/>
+                    <TextBox Text="{Binding RenameText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="{StaticResource BgDeep}"
+                             Foreground="{StaticResource FgInput}"
+                             BorderBrush="{StaticResource Accent}"
+                             BorderThickness="1"
+                             FontSize="11"
+                             TextAlignment="Center"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Padding="2,0"
+                             Visibility="{Binding IsRenaming, Converter={StaticResource BoolToVis}}"
+                             Loaded="RenameBox_Loaded"
+                             GotFocus="RenameBox_GotFocus"
+                             KeyDown="RenameBox_KeyDown"
+                             LostFocus="RenameBox_LostFocus"
+                             IsVisibleChanged="RenameBox_IsVisibleChanged"/>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="Left"  Modifiers="Alt" Command="{Binding GoBackCommand}"/>
+        <KeyBinding Key="Right" Modifiers="Alt" Command="{Binding GoForwardCommand}"/>
+        <KeyBinding Key="Up"    Modifiers="Alt" Command="{Binding GoUpCommand}"/>
+        <KeyBinding Key="F5"                    Command="{Binding RefreshCommand}"/>
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="24"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ TOOLBAR ═══ -->
+        <Border Grid.Row="0" Background="{StaticResource BgToolbar}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,0,1">
+            <DockPanel Margin="{StaticResource PaddingToolbarH}" VerticalAlignment="Center" LastChildFill="True">
+
+                <!-- Nav + sidebar pills -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+
+                    <!-- Sidebar pill -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center">
+                        <Button Command="{Binding ToggleSidebarCommand}" ToolTip="Toggle sidebar"
+                                Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource PillRadius}" Padding="10,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Rectangle Width="14" Height="14" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/toggle-sidebar.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Button>
+                    </Border>
+
+                    <!-- Nav pill: < | > | ^ -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Command="{Binding GoBackCommand}" ToolTip="Back (Alt+Left)"
+                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/back.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="2" Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)"
+                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/forward.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="4" Command="{Binding GoUpCommand}" ToolTip="Up (Alt+Up)"
+                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/up.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- Right-side pills -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+
+                    <!-- View pill: grid+chevron | columns | list -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="ViewGridBtn" Click="ViewGrid_Click" ToolTip="Grid view"
+                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
+                                        <Rectangle.OpacityMask>
+                                            <ImageBrush ImageSource="/Assets/Icons/grid.png" Stretch="Uniform"/>
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <Rectangle Width="10" Height="10" Margin="4,0,0,1" VerticalAlignment="Center" Fill="{StaticResource FgIconSubtle}">
+                                        <Rectangle.OpacityMask>
+                                            <ImageBrush ImageSource="/Assets/Icons/grid-dropdown-chevron.png" Stretch="Uniform"/>
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                </StackPanel>
+                            </Button>
+                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="2" x:Name="ViewColumnBtn" Click="ViewColumn_Click" ToolTip="Column view"
+                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/columns.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="4" x:Name="ViewListBtn" Click="ViewList_Click" ToolTip="List view"
+                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/list.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- More pill -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <Button x:Name="MoreBtn" Click="MoreBtn_Click" ToolTip="More options"
+                                Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="MoreMenu">
+                                    <MenuItem Header="New Folder" Style="{StaticResource PlainMenuItem}" Command="{Binding NewFolderCommand}"/>
+                                    <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                                    <MenuItem Header="Sort">
+                                        <MenuItem x:Name="SortName"             Header="Name"              IsCheckable="True" Click="Sort_Click"/>
+                                        <MenuItem x:Name="SortDate"             Header="Date Modified"     IsCheckable="True" Click="Sort_Click"/>
+                                        <MenuItem x:Name="SortType"             Header="Type"              IsCheckable="True" Click="Sort_Click"/>
+                                        <MenuItem x:Name="SortSize"             Header="Size"              IsCheckable="True" Click="Sort_Click"/>
+                                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                                        <MenuItem x:Name="SortAscending"        Header="Ascending"         IsCheckable="True" Click="SortDirection_Click"/>
+                                        <MenuItem x:Name="SortDescending"       Header="Descending"        IsCheckable="True" Click="SortDirection_Click"/>
+                                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                                        <MenuItem x:Name="ExplorerSpacebarItem" Header="Explorer spacebar" IsCheckable="True" Click="ExplorerSpacebar_Click" IsChecked="True"/>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource PillRadius}" Padding="10,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/more.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Button>
+                    </Border>
+                </StackPanel>
+
+                <!-- Path bar -->
+                <Border Background="{StaticResource BgDeep}"
+                        BorderBrush="{StaticResource BorderDefault}"
+                        BorderThickness="1"
+                        CornerRadius="13"
+                        Margin="{StaticResource NavHGap}"
+                        PreviewMouseLeftButtonDown="PathBar_ContainerPreviewMouseDown">
+                    <Grid>
+                        <!-- Breadcrumb mode -->
+                        <ScrollViewer x:Name="BreadcrumbScroller"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      Padding="{StaticResource PaddingPathBar}"
+                                      VerticalAlignment="Center"
+                                      Visibility="{Binding IsPathEditing, Converter={StaticResource InvBoolToVis}}">
+                            <ItemsControl ItemsSource="{Binding PathSegments}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:PathSegment}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Content="{Binding Name}"
+                                                    Command="{Binding Data.NavigateToSegmentCommand, Source={StaticResource Proxy}}"
+                                                    CommandParameter="{Binding FullPath}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource BreadcrumbSegmentButton}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsLast}" Value="True">
+                                                                <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                            <TextBlock Text="›"
+                                                       Foreground="{StaticResource FgSecondary}"
+                                                       FontSize="14"
+                                                       Margin="2,0"
+                                                       VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsLast}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Edit mode -->
+                        <Grid Margin="{StaticResource PaddingPathBar}"
+                              Visibility="{Binding IsPathEditing, Converter={StaticResource BoolToVis}}">
+                            <TextBox x:Name="PathBar"
+                                     Text="{Binding PathBarText, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     Foreground="{StaticResource FgPrimary}"
+                                     CaretBrush="{StaticResource FgPrimary}"
+                                     BorderThickness="0"
+                                     FontSize="14"
+                                     VerticalAlignment="Center"
+                                     Padding="0,0,20,0"
+                                     KeyDown="PathBar_KeyDown"
+                                     GotFocus="PathBar_GotFocus"
+                                     LostFocus="PathBar_LostFocus"
+                                     IsVisibleChanged="PathBar_IsVisibleChanged">
+                                <TextBox.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Cut"        Command="ApplicationCommands.Cut"/>
+                                        <MenuItem Header="Copy"       Command="ApplicationCommands.Copy"/>
+                                        <MenuItem Header="Paste"      Command="ApplicationCommands.Paste"/>
+                                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                                        <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll"/>
+                                    </ContextMenu>
+                                </TextBox.ContextMenu>
+                            </TextBox>
+                            <!-- Clear button -->
+                            <Button HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding ClearPathBarCommand}"
+                                    Focusable="False"
+                                    Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="4">
+                                            <Rectangle x:Name="Icon" Width="10" Height="10" Fill="{StaticResource FgIconSubtle}">
+                                                <Rectangle.OpacityMask>
+                                                    <ImageBrush ImageSource="/Assets/Icons/clear-path.png" Stretch="Uniform"/>
+                                                </Rectangle.OpacityMask>
+                                            </Rectangle>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                <Setter TargetName="Icon" Property="Fill" Value="{StaticResource FgInput}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ CONTENT (sidebar + main grid) ═══ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="SidebarColumn" Width="0" MinWidth="0"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar panel -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource BgDeep}"
+                    BorderBrush="{StaticResource BorderSubtle}"
+                    BorderThickness="0,0,1,0"
+                    ClipToBounds="True">
+                <DockPanel>
+
+                    <!-- Sidebar header -->
+                    <Border DockPanel.Dock="Top"
+                            BorderBrush="{StaticResource BorderSubtle}"
+                            BorderThickness="0,0,0,1"
+                            Height="36">
+                        <DockPanel Margin="12,0,4,0">
+                            <!-- Pin current folder button -->
+                            <Button DockPanel.Dock="Right"
+                                    Style="{StaticResource IconButton}"
+                                    Command="{Binding PinCurrentFolderCommand}"
+                                    ToolTip="Pin current folder">
+                                <Rectangle Width="14" Height="14" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/pin-folder.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <TextBlock Text="Pinned"
+                                       Foreground="{StaticResource FgSecondary}"
+                                       FontSize="12"
+                                       FontWeight="Medium"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Recycle bin link -->
+                    <Border DockPanel.Dock="Bottom"
+                            BorderBrush="{StaticResource BorderSubtle}"
+                            BorderThickness="0,1,0,0">
+                        <Button Command="{Binding OpenRecycleBinCommand}"
+                                ToolTip="Open Recycle Bin"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Padding="12,0,4,0"
+                                HorizontalContentAlignment="Left"
+                                Height="32">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="0"/>
+                                </Style>
+                            </Button.Resources>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd" Background="Transparent">
+                                                    <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Rectangle Width="14" Height="14" Margin="0,0,7,0" VerticalAlignment="Center" Fill="{StaticResource FgMuted}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/recycle-bin.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                                <TextBlock Text="Recycle Bin"
+                                           Foreground="{StaticResource FgSecondary}"
+                                           FontSize="12"
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- Pinned folder list -->
+                    <ListBox x:Name="PinnedList"
+                             ItemsSource="{Binding PinnedFolders}"
+                             ItemContainerStyle="{StaticResource SidebarItem}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             VirtualizingPanel.IsVirtualizing="False"
+                             ctrl:ListBoxDragDropBehavior.IsEnabled="True"
+                             SelectionChanged="PinnedList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:PinnedFolderViewModel}">
+                                <Border Padding="8,0" Background="Transparent"
+                                        MouseLeftButtonUp="PinnedItem_Click">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Remove"
+                                                      Style="{StaticResource PlainMenuItem}"
+                                                      Command="{Binding Data.UnpinFolderCommand, Source={StaticResource Proxy}}"
+                                                      CommandParameter="{Binding}"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Image Source="/Assets/folder-icon.png" Width="16" Height="16" Margin="0,0,7,0"
+                                               VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   Foreground="{StaticResource FgPrimary}"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- GridSplitter -->
+            <GridSplitter x:Name="SidebarSplitter"
+                          Grid.Column="1"
+                          Width="5"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="Transparent"
+                          Cursor="SizeWE"
+                          Visibility="Collapsed"
+                          DragCompleted="SidebarSplitter_DragCompleted"/>
+
+            <!-- Main scroll area — grid view -->
+            <ScrollViewer Grid.Column="2"
+                          x:Name="MainScrollViewer"
+                          Background="{StaticResource BgBase}"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          ScrollChanged="MainScrollViewer_ScrollChanged"
+                          Visibility="{Binding IsGridView, Converter={StaticResource BoolToVis}}">
+
+                <ListBox x:Name="FileListBox"
+                         ItemsSource="{Binding Files}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         SelectionMode="Extended"
+                         ItemTemplate="{StaticResource ThumbnailTemplate}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                         VirtualizingPanel.IsVirtualizing="False"
+                         AllowDrop="True"
+                         DragOver="FileListBox_DragOver"
+                         DragLeave="FileListBox_DragLeave"
+                         Drop="FileListBox_Drop"
+                         PreviewMouseLeftButtonDown="FileListBox_PreviewMouseLeftButtonDown"
+                         PreviewMouseMove="FileListBox_PreviewMouseMove"
+                         PreviewMouseRightButtonDown="FileListBox_PreviewMouseRightButtonDown"
+                         ContextMenuOpening="FileListBox_ContextMenuOpening"
+                         PreviewMouseWheel="FileListBox_PreviewMouseWheel"
+                         SelectionChanged="FileListBox_SelectionChanged"
+                         MouseDoubleClick="FileList_MouseDoubleClick"
+                         PreviewKeyDown="FileList_PreviewKeyDown">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ctrl:JustifiedWrapPanel Margin="{StaticResource MarginGridPanel}"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Cut"         Style="{StaticResource PlainMenuItem}" Click="ContextCut_Click"/>
+                            <MenuItem Header="Copy"        Style="{StaticResource PlainMenuItem}" Click="ContextCopy_Click"/>
+                            <MenuItem Header="Paste"       Style="{StaticResource PlainMenuItem}" Click="ContextPaste_Click"/>
+                            <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                            <MenuItem Header="Rename"      Style="{StaticResource PlainMenuItem}" Click="ContextRename_Click"/>
+                            <MenuItem Header="Delete"      Style="{StaticResource PlainMenuItem}" Click="ContextDelete_Click"/>
+                            <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                            <MenuItem Header="Properties"  Style="{StaticResource PlainMenuItem}" Click="ContextProperties_Click"/>
+                            <MenuItem Header="Copy Path"   Style="{StaticResource PlainMenuItem}" Click="ContextCopyPath_Click"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </ScrollViewer>
+
+            <!-- ═══ LIST VIEW ═══ -->
+            <ListView x:Name="FileListView"
+                      Grid.Column="2"
+                      ItemsSource="{Binding Files}"
+                      Background="{StaticResource BgBase}"
+                      BorderThickness="0"
+                      SelectionMode="Extended"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      Visibility="{Binding IsListView, Converter={StaticResource BoolToVis}}"
+                      AllowDrop="True"
+                      SelectionChanged="FileListView_SelectionChanged"
+                      MouseDoubleClick="FileListView_MouseDoubleClick"
+                      PreviewKeyDown="FileListView_PreviewKeyDown"
+                      PreviewMouseRightButtonDown="FileListView_PreviewMouseRightButtonDown"
+                      ContextMenuOpening="FileListView_ContextMenuOpening"
+                      PreviewMouseLeftButtonDown="FileListBox_PreviewMouseLeftButtonDown"
+                      PreviewMouseMove="FileListView_PreviewMouseMove"
+                      DragOver="FileListView_DragOver"
+                      DragLeave="FileListView_DragLeave"
+                      Drop="FileListView_Drop"
+                      GridViewColumnHeader.Click="ListHeader_Click">
+                <ListView.Resources>
+                    <conv:BoolToScaleConverter x:Key="BoolToScale"/>
+                    <!-- Dark filler header that WPF inserts to the right of all real columns -->
+                    <Style TargetType="GridViewColumnHeader">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="GridViewColumnHeader">
+                                    <Border Background="{StaticResource BgDeep}"
+                                            BorderBrush="{StaticResource BorderSubtle}"
+                                            BorderThickness="0,0,0,1"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <ContextMenu x:Key="ColMenu">
+                        <MenuItem Header="Date Modified" IsCheckable="True" IsChecked="{Binding ShowDateColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
+                        <MenuItem Header="Type"          IsCheckable="True" IsChecked="{Binding ShowTypeColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
+                        <MenuItem Header="Size"          IsCheckable="True" IsChecked="{Binding ShowSizeColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
+                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                        <MenuItem Header="Path"          IsCheckable="True" IsChecked="{Binding ShowPathColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
+                    </ContextMenu>
+                </ListView.Resources>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding"     Value="0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Foreground"  Value="{StaticResource FgPrimary}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border x:Name="Bd" Background="Transparent" BorderThickness="0" Padding="0" MinHeight="32">
+                                        <GridViewRowPresenter Content="{TemplateBinding Content}"
+                                                              Columns="{TemplateBinding GridView.ColumnCollection}"
+                                                              VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView x:Name="ListViewGrid">
+                        <!-- Name — always visible -->
+                        <GridViewColumn Width="280">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Tag="Name" ContextMenu="{StaticResource ColMenu}">
+                                    <GridViewColumnHeader.Template>
+                                        <ControlTemplate TargetType="GridViewColumnHeader">
+                                            <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
+                                                <DockPanel LastChildFill="True">
+                                                    <Rectangle DockPanel.Dock="Right"
+                                                          Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
+                                                          Fill="{StaticResource FgSecondary}"
+                                                          Visibility="{Binding DataContext.IsSortedByName, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
+                                                        </Rectangle.OpacityMask>
+                                                        <Rectangle.RenderTransform>
+                                                            <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
+                                                        </Rectangle.RenderTransform>
+                                                    </Rectangle>
+                                                    <TextBlock Text="Name" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </GridViewColumnHeader.Template>
+                                </GridViewColumnHeader>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+                                        <Grid Width="20" Height="20" Margin="0,0,7,0" VerticalAlignment="Center">
+                                            <Image Source="{Binding Thumbnail}" RenderOptions.BitmapScalingMode="HighQuality"
+                                                   Visibility="{Binding Thumbnail, Converter={StaticResource NullToVis}}"/>
+                                            <Image Source="/Assets/folder-icon.png" RenderOptions.BitmapScalingMode="HighQuality"
+                                                   Visibility="{Binding IsDirectory, Converter={StaticResource BoolToVis}}"/>
+                                        </Grid>
+                                        <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" FontSize="12"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Date Modified -->
+                        <GridViewColumn x:Name="DateColumn" Width="160">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Tag="Date Modified" ContextMenu="{StaticResource ColMenu}">
+                                    <GridViewColumnHeader.Template>
+                                        <ControlTemplate TargetType="GridViewColumnHeader">
+                                            <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
+                                                <DockPanel LastChildFill="True">
+                                                    <Rectangle DockPanel.Dock="Right"
+                                                          Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
+                                                          Fill="{StaticResource FgSecondary}"
+                                                          Visibility="{Binding DataContext.IsSortedByDate, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
+                                                        </Rectangle.OpacityMask>
+                                                        <Rectangle.RenderTransform>
+                                                            <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
+                                                        </Rectangle.RenderTransform>
+                                                    </Rectangle>
+                                                    <TextBlock Text="Date Modified" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </GridViewColumnHeader.Template>
+                                </GridViewColumnHeader>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DateModifiedDisplay}" Foreground="{StaticResource FgSecondary}" FontSize="12" Margin="8,0,0,0"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Type -->
+                        <GridViewColumn x:Name="TypeColumn" Width="110">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Tag="Type" ContextMenu="{StaticResource ColMenu}">
+                                    <GridViewColumnHeader.Template>
+                                        <ControlTemplate TargetType="GridViewColumnHeader">
+                                            <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
+                                                <DockPanel LastChildFill="True">
+                                                    <Rectangle DockPanel.Dock="Right"
+                                                          Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
+                                                          Fill="{StaticResource FgSecondary}"
+                                                          Visibility="{Binding DataContext.IsSortedByType, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
+                                                        </Rectangle.OpacityMask>
+                                                        <Rectangle.RenderTransform>
+                                                            <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
+                                                        </Rectangle.RenderTransform>
+                                                    </Rectangle>
+                                                    <TextBlock Text="Type" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </GridViewColumnHeader.Template>
+                                </GridViewColumnHeader>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding TypeDisplay}" Foreground="{StaticResource FgSecondary}" FontSize="12" Margin="8,0,0,0"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Size -->
+                        <GridViewColumn x:Name="SizeColumn" Width="80">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Tag="Size" ContextMenu="{StaticResource ColMenu}">
+                                    <GridViewColumnHeader.Template>
+                                        <ControlTemplate TargetType="GridViewColumnHeader">
+                                            <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
+                                                <DockPanel LastChildFill="True">
+                                                    <Rectangle DockPanel.Dock="Right"
+                                                          Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
+                                                          Fill="{StaticResource FgSecondary}"
+                                                          Visibility="{Binding DataContext.IsSortedBySize, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
+                                                        </Rectangle.OpacityMask>
+                                                        <Rectangle.RenderTransform>
+                                                            <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
+                                                        </Rectangle.RenderTransform>
+                                                    </Rectangle>
+                                                    <TextBlock Text="Size" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </GridViewColumnHeader.Template>
+                                </GridViewColumnHeader>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FileSizeDisplay}" Foreground="{StaticResource FgSecondary}" FontSize="12" Margin="8,0,0,0"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Path (optional) -->
+                        <GridViewColumn x:Name="PathColumn" Width="200">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader ContextMenu="{StaticResource ColMenu}">
+                                    <GridViewColumnHeader.Template>
+                                        <ControlTemplate TargetType="GridViewColumnHeader">
+                                            <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
+                                                <TextBlock Text="Path" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Hd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </GridViewColumnHeader.Template>
+                                </GridViewColumnHeader>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FullPath}" Foreground="{StaticResource FgSecondary}" FontSize="12" Margin="8,0,0,0"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Cut"        Style="{StaticResource PlainMenuItem}" Click="ContextCut_Click"/>
+                        <MenuItem Header="Copy"       Style="{StaticResource PlainMenuItem}" Click="ContextCopy_Click"/>
+                        <MenuItem Header="Paste"      Style="{StaticResource PlainMenuItem}" Click="ContextPaste_Click"/>
+                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                        <MenuItem Header="Rename"     Style="{StaticResource PlainMenuItem}" Click="ContextRename_Click"/>
+                        <MenuItem Header="Delete"     Style="{StaticResource PlainMenuItem}" Click="ContextDelete_Click"/>
+                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                        <MenuItem Header="Properties" Style="{StaticResource PlainMenuItem}" Click="ContextProperties_Click"/>
+                        <MenuItem Header="Copy Path"  Style="{StaticResource PlainMenuItem}" Click="ContextCopyPath_Click"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+            </ListView>
+
+            <!-- ═══ COLUMN VIEW ═══ -->
+            <Grid Grid.Column="2"
+                  Visibility="{Binding IsColumnView, Converter={StaticResource BoolToVis}}"
+                  Background="{StaticResource BgBase}">
+                <ScrollViewer x:Name="ColumnScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="ColumnsItemsControl" ItemsSource="{Binding Columns}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ColumnViewModel}">
+                                <Border Width="{Binding Width}"
+                                        BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,1,0">
+                                    <Grid>
+                                        <ListBox ItemsSource="{Binding Items}"
+                                                 SelectedItem="{Binding SelectedItem}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 SelectionMode="Single"
+                                                 VirtualizingPanel.IsVirtualizing="True"
+                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                 AllowDrop="True"
+                                                 GotFocus="ColumnListBox_GotFocus"
+                                                 SelectionChanged="ColumnPanel_SelectionChanged"
+                                                 MouseDoubleClick="ColumnListBox_MouseDoubleClick"
+                                                 PreviewMouseLeftButtonDown="ColumnListBox_PreviewMouseLeftButtonDown"
+                                                 PreviewMouseMove="ColumnListBox_PreviewMouseMove"
+                                                 PreviewKeyDown="ColumnListBox_PreviewKeyDown"
+                                                 DragOver="ColumnListBox_DragOver"
+                                                 DragLeave="ColumnListBox_DragLeave"
+                                                 Drop="ColumnListBox_Drop"
+                                                 ContextMenuOpening="ColumnListBox_ContextMenuOpening">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                    <Setter Property="Padding" Value="0"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+                                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="ListBoxItem">
+                                                                <Border x:Name="Bd" Background="Transparent" Padding="10,0">
+                                                                    <ContentPresenter/>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsSelected" Value="True">
+                                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Height="32">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="28"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <!-- Thumbnail or folder icon -->
+                                                        <Grid Grid.Column="0" Width="20" Height="20" VerticalAlignment="Center">
+                                                            <Image Source="{Binding Thumbnail}" RenderOptions.BitmapScalingMode="HighQuality"
+                                                                   Visibility="{Binding Thumbnail, Converter={StaticResource NullToVis}}"/>
+                                                            <!-- Folder icon (shown for directories) -->
+                                                            <Image Source="/Assets/folder-icon.png" RenderOptions.BitmapScalingMode="HighQuality"
+                                                                   Visibility="{Binding IsDirectory, Converter={StaticResource BoolToVis}}"/>
+                                                        </Grid>
+                                                        <!-- Filename -->
+                                                        <TextBlock Grid.Column="1" Text="{Binding FileName}"
+                                                                   VerticalAlignment="Center" FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <!-- Chevron for folders -->
+                                                        <Rectangle Grid.Column="2"
+                                                              Width="10" Height="10" Margin="4,0,0,0"
+                                                              Fill="{StaticResource FgIconSubtle}"
+                                                              Visibility="{Binding IsDirectory, Converter={StaticResource BoolToVis}}">
+                                                            <Rectangle.OpacityMask>
+                                                                <ImageBrush ImageSource="/Assets/Icons/row-expand-chevron.png" Stretch="Uniform"/>
+                                                            </Rectangle.OpacityMask>
+                                                        </Rectangle>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                        <!-- Loading overlay -->
+                                        <Border Background="{StaticResource BgBase}" IsHitTestVisible="False"
+                                                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="Loading…" Foreground="{StaticResource FgDim}" FontSize="12"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <!-- Resize handle -->
+                                        <Thumb HorizontalAlignment="Right"
+                                               Style="{StaticResource ColumnResizeThumb}"
+                                               DragDelta="ColumnResizeThumb_DragDelta"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Loading overlay -->
+            <Border Grid.Column="2"
+                    Background="{StaticResource BgBase}"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"
+                    IsHitTestVisible="False">
+                <TextBlock Text="Loading…" Foreground="{StaticResource FgDim}" FontSize="13"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
+
+        <!-- ═══ STATUS BAR ═══ -->
+        <Border Grid.Row="2" Background="{StaticResource BgDeep}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,1,0,0"
+                Padding="{StaticResource PaddingStatusBar}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right"
+                        Command="{Binding UndoDeleteCommand}"
+                        Visibility="{Binding UndoAvailable, Converter={StaticResource BoolToVis}}"
+                        Cursor="Hand"
+                        Focusable="False">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="8,2">
+                                <TextBlock Text="Undo Delete"
+                                           Foreground="{StaticResource FgInput}"
+                                           FontSize="11"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{StaticResource FgSecondary}"
+                           FontSize="12"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+        <!-- Size popup -->
+        <Popup x:Name="SizePopup"
+               PlacementTarget="{Binding ElementName=ViewGridBtn}"
+               Placement="Bottom"
+               StaysOpen="False"
+               AllowsTransparency="True">
+            <Border Background="{StaticResource BgPopup}"
+                    BorderBrush="{StaticResource BorderStrong}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="12,10"
+                    Width="260">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Opacity="0.5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Command="{Binding DecreaseSizeCommand}"
+                                Style="{StaticResource IconButton}">
+                            <Rectangle Width="10" Height="10" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/minus.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Button>
+                        <Slider Grid.Column="1"
+                                Margin="8,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource DarkSlider}"
+                                Minimum="100" Maximum="520"
+                                Value="{Binding ThumbnailSize, Mode=TwoWay}"/>
+                        <Button Grid.Column="2"
+                                Command="{Binding IncreaseSizeCommand}"
+                                Style="{StaticResource IconButton}">
+                            <Rectangle Width="10" Height="10" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/plus.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Button>
+                    </Grid>
+                    <TextBlock Margin="0,8,0,0"
+                               TextAlignment="Center"
+                               Foreground="{StaticResource FgSecondary}"
+                               FontSize="11">
+                        <Run Text="{Binding ThumbnailSize, Mode=OneWay}"/><Run Text=" px"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</Window>

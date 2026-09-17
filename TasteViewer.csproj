@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Taste</AssemblyName>
+    <RootNamespace>Taste</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Remove implicit WinForms/Drawing global usings to avoid type ambiguities in WPF files -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Fonts\Inter-Regular.ttf" />
+    <Resource Include="Fonts\Inter-Medium.ttf" />
+    <Resource Include="Assets\icon.png" />
+    <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\folder-icon.png" />
+    <Resource Include="Assets\Icons\*.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+  </ItemGroup>
+</Project>

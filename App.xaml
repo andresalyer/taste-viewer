@@ -1,0 +1,85 @@
+<Application x:Class="Taste.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!-- ── Typography ───────────────────────────────────────────── -->
+        <FontFamily x:Key="FontPrimary">/Taste;component/Fonts/#Inter</FontFamily>
+
+        <!-- Font size scale -->
+        <sys:Double x:Key="FontSizeXS">10</sys:Double>
+        <sys:Double x:Key="FontSizeSM">11</sys:Double>
+        <sys:Double x:Key="FontSizeMD">12</sys:Double>
+        <sys:Double x:Key="FontSizeLG">13</sys:Double>
+
+        <!-- Corner radius scale -->
+        <CornerRadius x:Key="RadiusSM">4</CornerRadius>
+        <CornerRadius x:Key="RadiusMD">6</CornerRadius>
+        <CornerRadius x:Key="RadiusLG">8</CornerRadius>
+        <!-- PillRadius="13" already defined below -->
+
+        <!-- ── Spacing scale (uniform Thickness) ───────────────────── -->
+        <Thickness x:Key="Space0">0</Thickness>
+        <Thickness x:Key="Space4">4</Thickness>
+        <Thickness x:Key="Space8">8</Thickness>
+        <Thickness x:Key="Space12">12</Thickness>
+        <Thickness x:Key="Space16">16</Thickness>
+        <Thickness x:Key="Space24">24</Thickness>
+        <Thickness x:Key="Space32">32</Thickness>
+        <Thickness x:Key="Space40">40</Thickness>
+        <Thickness x:Key="Space48">48</Thickness>
+
+        <!-- ── Directional spacing tokens ───────────────────────────── -->
+        <Thickness x:Key="NavHGap">12,0,0,0</Thickness>           <!-- left gap between toolbar items -->
+        <Thickness x:Key="PaddingToolbarH">8,0,8,0</Thickness>    <!-- toolbar left/right inset -->
+        <Thickness x:Key="PaddingPathBar">12,4</Thickness>        <!-- path bar padding -->
+        <Thickness x:Key="PaddingIconBtn">8,4</Thickness>         <!-- icon button hit area -->
+        <Thickness x:Key="PaddingMenuItem">10,5</Thickness>       <!-- menu item row -->
+        <Thickness x:Key="MarginMenuItem">4,1</Thickness>         <!-- menu item outer margin -->
+        <Thickness x:Key="MarginSeparator">8,4</Thickness>        <!-- menu separator -->
+        <Thickness x:Key="PaddingContextMenu">0,4</Thickness>     <!-- context menu top/bottom -->
+        <Thickness x:Key="MarginTile">4</Thickness>               <!-- thumbnail tile outer margin -->
+        <Thickness x:Key="MarginGridPanel">8</Thickness>          <!-- justified grid panel inset -->
+        <Thickness x:Key="MarginTileLabel">0,4,0,0</Thickness>    <!-- label top gap below tile -->
+        <Thickness x:Key="PaddingStatusBar">12,0</Thickness>      <!-- status bar left/right -->
+        <Thickness x:Key="MarginVideoBadge">4</Thickness>         <!-- video badge from tile edge -->
+        <Thickness x:Key="PaddingVideoBadge">4,2</Thickness>      <!-- video badge pill -->
+        <Thickness x:Key="PaddingPlaceholder">8,0</Thickness>     <!-- placeholder text in tile -->
+
+        <!-- ── Color tokens ──────────────────────────────────────────── -->
+        <!-- Surfaces -->
+        <SolidColorBrush x:Key="BgBase"    Color="#1C1C1C"/>  <!-- window, scroll area -->
+        <SolidColorBrush x:Key="BgDeep"    Color="#1A1A1A"/>  <!-- status bar, path bar, inputs -->
+        <SolidColorBrush x:Key="BgToolbar" Color="#202020"/>  <!-- toolbar -->
+        <SolidColorBrush x:Key="BgPopup"   Color="#252525"/>  <!-- context menus -->
+        <SolidColorBrush x:Key="BgCard"    Color="#141414"/>  <!-- thumbnail tile -->
+        <!-- Borders -->
+        <SolidColorBrush x:Key="BorderSubtle"  Color="#2C2C2C"/>  <!-- section dividers -->
+        <SolidColorBrush x:Key="BorderDefault" Color="#333333"/>  <!-- input outlines -->
+        <SolidColorBrush x:Key="BorderStrong"  Color="#3A3A3A"/>  <!-- menu borders, separators -->
+        <!-- Text & icons -->
+        <SolidColorBrush x:Key="FgInput"       Color="#E0E0E0"/>  <!-- active input text -->
+        <SolidColorBrush x:Key="FgPrimary"     Color="#C0C0C0"/>  <!-- path bar, menu items -->
+        <SolidColorBrush x:Key="FgIcon"        Color="#A0A0A0"/>  <!-- toolbar icons -->
+        <SolidColorBrush x:Key="FgSecondary"   Color="#888888"/>  <!-- filename labels -->
+        <SolidColorBrush x:Key="FgMuted"       Color="#505050"/>  <!-- status text, scrollbar thumb -->
+        <SolidColorBrush x:Key="FgIconSubtle"  Color="#606060"/>  <!-- dropdown chevrons -->
+        <SolidColorBrush x:Key="FgDim"         Color="#444444"/>  <!-- disabled icons, loading text -->
+        <SolidColorBrush x:Key="FgPlaceholder" Color="#363636"/>  <!-- unloaded tile text -->
+        <SolidColorBrush x:Key="FgIconLight"   Color="#DDDDDD"/>  <!-- video badge icon -->
+        <!-- Interactive overlays (semi-transparent) -->
+        <SolidColorBrush x:Key="OverlayHover"     Color="#28FFFFFF"/>
+        <SolidColorBrush x:Key="OverlayPressed"   Color="#18FFFFFF"/>
+        <SolidColorBrush x:Key="OverlayMenuHover" Color="#30FFFFFF"/>
+        <SolidColorBrush x:Key="OverlayTileHover" Color="#12FFFFFF"/>
+        <SolidColorBrush x:Key="SelectionBorder"  Color="#CCF0F0F0"/>
+        <!-- Pill capsule -->
+        <SolidColorBrush x:Key="PillBg"     Color="#08FFFFFF"/>  <!-- pill fill -->
+        <SolidColorBrush x:Key="PillBorder" Color="#18FFFFFF"/>  <!-- pill outline + dividers -->
+        <CornerRadius    x:Key="PillRadius"  >13</CornerRadius>
+        <!-- Accent -->
+        <SolidColorBrush x:Key="Accent"       Color="#0078D4"/>
+        <SolidColorBrush x:Key="VideoBadgeBg" Color="#BB111111"/>
+    </Application.Resources>
+</Application>

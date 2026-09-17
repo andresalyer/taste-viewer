@@ -1,0 +1,782 @@
+<Window x:Class="Taste.Preview.PreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Taste"
+        Width="900" Height="650"
+        MinWidth="300" MinHeight="200"
+        Background="Black"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+        ShowInTaskbar="True"
+        Visibility="Hidden"
+        PreviewKeyDown="Window_KeyDown"
+        Closing="Window_Closing"
+        RenderOptions.BitmapScalingMode="HighQuality">
+    <DockPanel>
+
+        <!-- ── Toolbar ── -->
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource BgToolbar}"
+                Height="42"
+                KeyboardNavigation.TabNavigation="None">
+            <Border.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Background"       Value="Transparent"/>
+                    <Setter Property="Foreground"       Value="{StaticResource FgIcon}"/>
+                    <Setter Property="BorderThickness"  Value="0"/>
+                    <Setter Property="Padding"          Value="9,0"/>
+                    <Setter Property="FontSize"         Value="14"/>
+                    <Setter Property="Height"           Value="26"/>
+                    <Setter Property="MinWidth"         Value="26"/>
+                    <Setter Property="Cursor"           Value="Hand"/>
+                    <Setter Property="Focusable"        Value="False"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bd"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="3"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground"       Value="{StaticResource FgSecondary}"/>
+                    <Setter Property="FontSize"         Value="12"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Focusable"        Value="False"/>
+                </Style>
+                <Style TargetType="ToggleButton">
+                    <Setter Property="Background"        Value="Transparent"/>
+                    <Setter Property="Foreground"        Value="{StaticResource FgIcon}"/>
+                    <Setter Property="BorderThickness"   Value="0"/>
+                    <Setter Property="Padding"           Value="7,0"/>
+                    <Setter Property="Height"            Value="26"/>
+                    <Setter Property="MinWidth"          Value="26"/>
+                    <Setter Property="Cursor"            Value="Hand"/>
+                    <Setter Property="Focusable"         Value="False"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="#2AFFFFFF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style TargetType="Separator">
+                    <Setter Property="Background" Value="{StaticResource BorderStrong}"/>
+                    <Setter Property="Width"      Value="1"/>
+                    <Setter Property="Margin"     Value="4,5"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Separator">
+                                <Border Background="{TemplateBinding Background}"
+                                        Width="{TemplateBinding Width}"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Border.Resources>
+
+            <DockPanel>
+                <!-- Info button pinned to the right -->
+                <Button DockPanel.Dock="Right"
+                        Click="Info_Click"
+                        ToolTip="Keyboard shortcuts"
+                        Margin="0,0,6,0">
+                    <Rectangle Width="14" Height="14" Fill="{StaticResource FgMuted}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Assets/Icons/info.png" Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </Button>
+
+                <!-- Undo delete — shown temporarily after a delete -->
+                <Button DockPanel.Dock="Right"
+                        x:Name="UndoBtn"
+                        Content="Undo delete" Click="UndoDelete_Click"
+                        Padding="8,0"
+                        Foreground="#E8A87C"
+                        Margin="0,0,2,0"
+                        Visibility="Collapsed"/>
+                <Separator DockPanel.Dock="Right" x:Name="UndoSep" Visibility="Collapsed"/>
+
+                <!-- Left-side controls -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0">
+                    <!-- Zoom pill -->
+                    <Border Background="{StaticResource PillBg}"
+                            BorderBrush="{StaticResource PillBorder}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}"
+                            Height="26"
+                            VerticalAlignment="Center"
+                            Margin="2,0,8,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+−)">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="12,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/minus.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
+                            <TextBlock x:Name="ZoomLabel" Grid.Column="2" Text="100%"
+                                       TextAlignment="Center" Focusable="False"/>
+                            <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="4" Click="ZoomIn_Click" ToolTip="Zoom in (Ctrl++)">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="12,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/plus.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    <!-- Fit / Fullscreen pill -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Click="Fit_Click" ToolTip="Fit to window (Ctrl+0)">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/fit.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="2" x:Name="FullscreenBtn" Click="Fullscreen_Click" ToolTip="Toggle fullscreen (F11)">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="10,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/fullscreen.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Speed pill -->
+                    <Border x:Name="SpeedPill" Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="0,0,8,0"
+                            Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="34"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="SpeedDownBtn" Click="SpeedDown_Click" ToolTip="Slower">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="12,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/minus.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
+                            <TextBlock x:Name="SpeedLabel" Grid.Column="2" Text="1×"
+                                       TextAlignment="Center" Focusable="False"/>
+                            <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
+                            <Button Grid.Column="4" x:Name="SpeedUpBtn" Click="SpeedUp_Click" ToolTip="Faster">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="12,1" Height="26">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/plus.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Scrubber pill -->
+                    <Border x:Name="ScrubberPill" Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                        <ToggleButton x:Name="ScrubberToggleBtn" Click="ScrubberToggle_Click"
+                                      ToolTip="Toggle scrubber"
+                                      Foreground="{StaticResource FgIcon}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="13" Padding="11,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#2AFFFFFF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                            <Rectangle Width="14" Height="14" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/toggle-scrubber.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </ToggleButton>
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Media area ── -->
+        <Grid>
+            <ScrollViewer x:Name="Scroller"
+                          Background="Black"
+                          BorderThickness="0"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          Focusable="False"
+                          PreviewMouseWheel="Scroller_PreviewMouseWheel"
+                          SizeChanged="Scroller_SizeChanged"
+                          MouseDoubleClick="Scroller_MouseDoubleClick"
+                          MouseLeftButtonDown="Scroller_MouseLeftButtonDown"
+                          MouseMove="Scroller_MouseMove"
+                          MouseLeftButtonUp="Scroller_MouseLeftButtonUp">
+                <Grid x:Name="ContentGrid"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Focusable="False">
+                    <Grid.LayoutTransform>
+                        <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1"/>
+                    </Grid.LayoutTransform>
+                    <Image x:Name="ImageView"
+                           Stretch="Fill"
+                           Visibility="Collapsed"
+                           Focusable="False"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <MediaElement x:Name="VideoView"
+                                  Stretch="Fill"
+                                  LoadedBehavior="Manual"
+                                  UnloadedBehavior="Stop"
+                                  Visibility="Collapsed"
+                                  Focusable="False"
+                                  MediaOpened="VideoView_MediaOpened"
+                                  MediaEnded="VideoView_MediaEnded"/>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Dim overlay — shown while next media loads, masks source-change flash -->
+            <Border x:Name="LoadingDim"
+                    Background="#99000000"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="False"
+                    Focusable="False"/>
+
+            <TextBlock x:Name="EmptyState"
+                       Text="No files remaining"
+                       Foreground="#666666"
+                       FontSize="16"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Focusable="False"
+                       Visibility="Collapsed"/>
+
+            <!-- Scrubber overlay -->
+            <Border x:Name="ScrubberOverlay"
+                    VerticalAlignment="Bottom"
+                    Background="#CC000000"
+                    Padding="14,8,14,10"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="True"
+                    Focusable="False">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Play/pause -->
+                    <Button x:Name="ScrubberPlayPauseBtn"
+                            Grid.Column="0"
+                            Click="PlayPause_Click"
+                            Focusable="False"
+                            VerticalAlignment="Center"
+                            Margin="0,0,10,0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bd"
+                                        Background="Transparent"
+                                        CornerRadius="3"
+                                        Padding="7,0"
+                                        Height="26"
+                                        MinWidth="26">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="#18FFFFFF"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="#18FFFFFF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Grid>
+                            <Rectangle x:Name="PlayIcon" Width="14" Height="14" Fill="White" Visibility="Collapsed">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/play.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                            <Rectangle x:Name="PauseIcon" Width="14" Height="14" Fill="White">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Assets/Icons/pause.png" Stretch="Uniform"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                        </Grid>
+                    </Button>
+
+                    <!-- Timeline — custom track (no Slider, full mouse control) -->
+                    <Grid x:Name="ScrubberTrack"
+                          Grid.Column="1"
+                          Height="32"
+                          Margin="0,0,12,0"
+                          Background="Transparent"
+                          Cursor="Hand"
+                          MouseLeftButtonDown="ScrubberTrack_MouseDown"
+                          MouseMove="ScrubberTrack_MouseMove"
+                          MouseLeftButtonUp="ScrubberTrack_MouseUp">
+                        <!-- Unplayed -->
+                        <Rectangle Height="3" Fill="#33FFFFFF" RadiusX="1.5" RadiusY="1.5" VerticalAlignment="Center"/>
+                        <!-- Played -->
+                        <Rectangle x:Name="ScrubberFill" Height="3" Fill="#99FFFFFF"
+                                   RadiusX="1.5" RadiusY="1.5"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left" Width="0"/>
+                        <!-- Thumb -->
+                        <Ellipse x:Name="ScrubberThumb" Width="12" Height="12" Fill="#CCFFFFFF"
+                                 HorizontalAlignment="Left" VerticalAlignment="Center"
+                                 Margin="-6,0,0,0">
+                            <Ellipse.RenderTransform>
+                                <TranslateTransform x:Name="ThumbTranslate"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                    </Grid>
+
+                    <!-- Timestamp -->
+                    <TextBlock x:Name="ScrubberTime"
+                               Grid.Column="2"
+                               Text="0:00 / 0:00"
+                               FontSize="11"
+                               Foreground="#AAFFFFFF"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Volume control: vertical slider pops above speaker on hover, tap to mute -->
+                    <StackPanel x:Name="VolumePanel"
+                                Grid.Column="3"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="10,0,0,0"
+                                MouseEnter="VolumePanel_MouseEnter"
+                                MouseLeave="VolumePanel_MouseLeave">
+                        <Popup x:Name="VolumePopup"
+                               PlacementTarget="{Binding ElementName=MuteBtn}"
+                               Placement="Top"
+                               AllowsTransparency="True"
+                               StaysOpen="True"
+                               HorizontalOffset="-6"
+                               VerticalOffset="-4">
+                            <Border x:Name="VolumePopupBorder"
+                                    Background="#CC000000"
+                                    CornerRadius="6"
+                                    Padding="9,10"
+                                    Opacity="0"
+                                    MouseEnter="VolumePopupContent_MouseEnter"
+                                    MouseLeave="VolumePopupContent_MouseLeave">
+                                <Slider x:Name="VolumeSlider"
+                                        Orientation="Vertical"
+                                        Height="80"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Focusable="False"
+                                        Cursor="Hand"
+                                        ValueChanged="VolumeSlider_ValueChanged">
+                                    <Slider.Template>
+                                        <ControlTemplate TargetType="Slider">
+                                            <Border Background="Transparent" Width="20">
+                                                <Track x:Name="PART_Track" Orientation="Vertical">
+                                                    <Track.DecreaseRepeatButton>
+                                                        <RepeatButton Command="Slider.DecreaseLarge">
+                                                            <RepeatButton.Template>
+                                                                <ControlTemplate TargetType="RepeatButton">
+                                                                    <Border Width="3" Background="#99FFFFFF" CornerRadius="1.5" HorizontalAlignment="Center"/>
+                                                                </ControlTemplate>
+                                                            </RepeatButton.Template>
+                                                        </RepeatButton>
+                                                    </Track.DecreaseRepeatButton>
+                                                    <Track.Thumb>
+                                                        <Thumb>
+                                                            <Thumb.Template>
+                                                                <ControlTemplate TargetType="Thumb">
+                                                                    <Ellipse Width="10" Height="10" Fill="#CCFFFFFF"/>
+                                                                </ControlTemplate>
+                                                            </Thumb.Template>
+                                                        </Thumb>
+                                                    </Track.Thumb>
+                                                    <Track.IncreaseRepeatButton>
+                                                        <RepeatButton Command="Slider.IncreaseLarge">
+                                                            <RepeatButton.Template>
+                                                                <ControlTemplate TargetType="RepeatButton">
+                                                                    <Border Width="3" Background="#33FFFFFF" CornerRadius="1.5" HorizontalAlignment="Center"/>
+                                                                </ControlTemplate>
+                                                            </RepeatButton.Template>
+                                                        </RepeatButton>
+                                                    </Track.IncreaseRepeatButton>
+                                                </Track>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Slider.Template>
+                                </Slider>
+                            </Border>
+                        </Popup>
+                        <ToggleButton x:Name="MuteBtn"
+                                      Click="MuteBtn_Click"
+                                      Focusable="False"
+                                      VerticalAlignment="Center"
+                                      Foreground="#CCFFFFFF">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Bd"
+                                            Background="Transparent"
+                                            CornerRadius="3"
+                                            Padding="5,0"
+                                            Height="26"
+                                            MinWidth="26">
+                                        <Viewbox Width="14" Height="14">
+                                            <Canvas Width="24" Height="24">
+                                                <Canvas x:Name="UnmutedIcon">
+                                                    <!-- Speaker cone -->
+                                                    <Path Data="M 2,9.5 L 7,9.5 L 13,5.5 L 13,18.5 L 7,14.5 L 2,14.5 Z"
+                                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"/>
+                                                    <!-- Wave 1 (small) -->
+                                                    <Path Data="M 15.5,9.5 Q 18.5,12 15.5,14.5"
+                                                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                                                          StrokeThickness="1.8" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                                    <!-- Wave 2 (large) -->
+                                                    <Path Data="M 17.5,7 Q 22,12 17.5,17"
+                                                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                                                          StrokeThickness="1.8" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                                </Canvas>
+                                                <Rectangle x:Name="MutedIcon" Width="24" Height="24" Visibility="Collapsed"
+                                                           Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <ImageBrush ImageSource="/Assets/Icons/speaker-muted.png" Stretch="Uniform"/>
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Canvas>
+                                        </Viewbox>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#18FFFFFF"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#18FFFFFF"/>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="UnmutedIcon" Property="Visibility" Value="Collapsed"/>
+                                            <Setter TargetName="MutedIcon"   Property="Visibility" Value="Visible"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Generic file view — shell icon + filename for non-media files -->
+            <StackPanel x:Name="GenericView"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Collapsed"
+                        Focusable="False">
+                <Image x:Name="GenericIcon"
+                       Width="128" Height="128"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Margin="0,0,0,14"/>
+                <TextBlock x:Name="GenericFileName"
+                           Foreground="#888888"
+                           FontSize="13"
+                           TextAlignment="Center"
+                           MaxWidth="500"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- Shortcuts overlay -->
+            <Grid x:Name="ShortcutsOverlay" Visibility="Collapsed" Focusable="False">
+                <Rectangle Fill="#B2000000"/>
+                <Border HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource BgPopup}"
+                        BorderBrush="{StaticResource BorderStrong}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="24,20"
+                        MinWidth="340">
+                    <StackPanel>
+                        <StackPanel.Resources>
+                            <Style x:Key="Key" TargetType="TextBlock">
+                                <Setter Property="Foreground"        Value="{StaticResource FgPrimary}"/>
+                                <Setter Property="FontSize"          Value="12"/>
+                                <Setter Property="FontFamily"        Value="Consolas"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="MinWidth"          Value="150"/>
+                            </Style>
+                            <Style x:Key="Desc" TargetType="TextBlock">
+                                <Setter Property="Foreground"        Value="{StaticResource FgSecondary}"/>
+                                <Setter Property="FontSize"          Value="12"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                            <Style x:Key="Group" TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource FgMuted}"/>
+                                <Setter Property="FontSize"   Value="10"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Margin"     Value="0,12,0,4"/>
+                            </Style>
+                        </StackPanel.Resources>
+
+                        <Grid Margin="0,0,0,16">
+                            <TextBlock Text="Keyboard Shortcuts"
+                                       Foreground="{StaticResource FgInput}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <Button HorizontalAlignment="Right"
+                                    Click="CloseInfo_Click"
+                                    Focusable="False"
+                                    Cursor="Hand"
+                                    Background="Transparent"
+                                    Foreground="#888888"
+                                    BorderThickness="0"
+                                    Padding="6,4"
+                                    VerticalAlignment="Center">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="#888888"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Focusable" Value="False"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                                            CornerRadius="3" Padding="6,2">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="#383838"/>
+                                                            <Setter Property="Foreground" Value="#CCCCCC"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                                <Rectangle Width="10" Height="10" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                    <Rectangle.OpacityMask>
+                                        <ImageBrush ImageSource="/Assets/Icons/clear-path.png" Stretch="Uniform"/>
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </Grid>
+
+                        <TextBlock Style="{StaticResource Group}" Text="GENERAL"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Space  /  Esc"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Close preview"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="←  →"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Previous / next file"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Delete"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Send to Recycle Bin"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="F11"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Toggle fullscreen"/>
+                        </StackPanel>
+
+                        <TextBlock Style="{StaticResource Group}" Text="ZOOM"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Scroll"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Zoom (pointer-centered)"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Ctrl +  /  Ctrl −"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Zoom in / out"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Double-click"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Fit to window"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Drag"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Pan (when zoomed in)"/>
+                        </StackPanel>
+
+                        <TextBlock Style="{StaticResource Group}" Text="VIDEO"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="P"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Play / Pause"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="S"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Toggle scrubber"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="+  /  −"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Playback speed"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+        </Grid>
+
+    </DockPanel>
+</Window>
