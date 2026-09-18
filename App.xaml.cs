@@ -64,7 +64,7 @@ public partial class App : Application
 
         try
         {
-            var installerPath = await UpdateService.DownloadInstallerAsync(update.DownloadUrl);
+            var installerPath = await UpdateService.DownloadInstallerAsync(update.DownloadUrl, update.Sha256);
             UpdateService.RunInstallerAndExit(installerPath);
         }
         catch (Exception ex)

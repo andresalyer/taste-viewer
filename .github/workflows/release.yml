@@ -56,11 +56,18 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ steps.version.outputs.version }} installer\Taste.iss
 
+      - name: Compute installer checksum
+        shell: pwsh
+        run: |
+          $installer = "installer-output\Taste-Setup-${{ steps.version.outputs.version }}.exe"
+          (Get-FileHash -Algorithm SHA256 $installer).Hash | Out-File -Encoding ascii -NoNewline "$installer.sha256"
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
           gh release create ${{ steps.version.outputs.tag }}
           "installer-output\Taste-Setup-${{ steps.version.outputs.version }}.exe"
+          "installer-output\Taste-Setup-${{ steps.version.outputs.version }}.exe.sha256"
           --title "Taste Viewer ${{ steps.version.outputs.version }}"
           --generate-notes
