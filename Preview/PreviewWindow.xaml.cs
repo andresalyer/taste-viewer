@@ -58,6 +58,7 @@ public partial class PreviewWindow : Window
     // Scrubber
     private DispatcherTimer? _posTimer;
     private DispatcherTimer? _volumeTimer;
+    private DispatcherTimer? _scrubberHideTimer;
     private double           _videoDuration;
     private bool             _scrubberDragging;
     private bool             _wasPlayingBeforeScrub;
@@ -82,6 +83,8 @@ public partial class PreviewWindow : Window
         VideoView.Volume   = 1.0;
         _volumeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
         _volumeTimer.Tick += (s, e) => { _volumeTimer.Stop(); HideVolumePopup(); };
+        _scrubberHideTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        _scrubberHideTimer.Tick += (s, e) => { _scrubberHideTimer.Stop(); ApplyScrubberState(false); };
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -422,7 +425,7 @@ public partial class PreviewWindow : Window
         LoadingDim.Visibility = Visibility.Collapsed;
         _videoDuration = VideoView.NaturalDuration.HasTimeSpan
             ? VideoView.NaturalDuration.TimeSpan.TotalSeconds : 0;
-        if (ScrubberToggleBtn.IsChecked == true) { StopPosTimer(); StartPosTimer(); }
+        if (ScrubberOverlay.Visibility == Visibility.Visible) { StopPosTimer(); StartPosTimer(); }
     }
 
     void VideoView_MediaEnded(object sender, RoutedEventArgs e)
@@ -655,25 +658,46 @@ public partial class PreviewWindow : Window
     void ShowVideoControls(bool show)
     {
         var v = show ? Visibility.Visible : Visibility.Collapsed;
-        SpeedPill.Visibility    = v;
-        ScrubberPill.Visibility = v;
+        SpeedPill.Visibility = v;
         if (!show)
         {
-            ScrubberToggleBtn.IsChecked = false;
-            ScrubberOverlay.Visibility  = Visibility.Collapsed;
-            VolumePopup.IsOpen          = false;
+            _scrubberHideTimer!.Stop();
+            ScrubberOverlay.Visibility = Visibility.Collapsed;
+            VolumePopup.IsOpen         = false;
             StopPosTimer();
         }
     }
 
-    void ScrubberToggle_Click(object sender, RoutedEventArgs e)
-        => ApplyScrubberState(ScrubberToggleBtn.IsChecked == true);
+    void ScrubberHoverZone_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (VideoView.Visibility != Visibility.Visible) return;
+        _scrubberHideTimer!.Stop();
+        ApplyScrubberState(true);
+    }
+
+    void ScrubberHoverZone_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (_scrubberDragging) return;
+        _scrubberHideTimer!.Start();
+    }
 
     void ApplyScrubberState(bool show)
     {
-        ScrubberOverlay.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        if (!show) VolumePopup.IsOpen = false;
-        if (show) StartPosTimer(); else StopPosTimer();
+        if (show)
+        {
+            ScrubberOverlay.Visibility = Visibility.Visible;
+            var anim = new DoubleAnimation(ScrubberOverlay.Opacity, 1, TimeSpan.FromMilliseconds(150));
+            ScrubberOverlay.BeginAnimation(UIElement.OpacityProperty, anim);
+            StartPosTimer();
+        }
+        else
+        {
+            var anim = new DoubleAnimation(ScrubberOverlay.Opacity, 0, TimeSpan.FromMilliseconds(150));
+            anim.Completed += (_, _) => ScrubberOverlay.Visibility = Visibility.Collapsed;
+            ScrubberOverlay.BeginAnimation(UIElement.OpacityProperty, anim);
+            VolumePopup.IsOpen = false;
+            StopPosTimer();
+        }
     }
 
     void VolumePanel_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
@@ -1004,10 +1028,10 @@ public partial class PreviewWindow : Window
                 }
                 break;
             case Key.S:
-                if (!ctrl && ScrubberPill.Visibility == Visibility.Visible)
+                if (!ctrl && VideoView.Visibility == Visibility.Visible)
                 {
-                    ScrubberToggleBtn.IsChecked = !(ScrubberToggleBtn.IsChecked == true);
-                    ApplyScrubberState(ScrubberToggleBtn.IsChecked == true);
+                    _scrubberHideTimer!.Stop();
+                    ApplyScrubberState(ScrubberOverlay.Visibility != Visibility.Visible);
                     e.Handled = true;
                 }
                 break;
@@ -1030,8 +1054,7 @@ public partial class PreviewWindow : Window
     void CloseInfo_Click(object sender, RoutedEventArgs e)  => ShortcutsOverlay.Visibility = Visibility.Collapsed;
     void ZoomOut_Click(object sender, RoutedEventArgs e)    => ZoomBy(1.0 / 1.25, null);
     void ZoomIn_Click(object sender, RoutedEventArgs e)     => ZoomBy(1.25, null);
-    void Fit_Click(object sender, RoutedEventArgs e)        => SetFitZoom();
-    void Fullscreen_Click(object sender, RoutedEventArgs e) => ToggleFullscreen();
+    void Fit_Click(object sender, RoutedEventArgs e) => SetFitZoom();
     void PlayPause_Click(object sender, RoutedEventArgs e)  => TogglePlayPause();
     void SpeedDown_Click(object sender, RoutedEventArgs e)  => SetSpeed(_speedIndex - 1);
     void SpeedUp_Click(object sender, RoutedEventArgs e)    => SetSpeed(_speedIndex + 1);

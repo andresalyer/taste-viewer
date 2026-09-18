@@ -381,11 +381,7 @@
                             <!-- Scroll to top -->
                             <Button Grid.Row="0" Style="{StaticResource ScrollEndButton}"
                                     Command="ScrollBar.ScrollToTopCommand">
-                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgMuted}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/scroll-up.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconChevronUp}" Stroke="{StaticResource FgMuted}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <!-- Track -->
                             <Track x:Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
@@ -396,11 +392,7 @@
                             <!-- Scroll to bottom -->
                             <Button Grid.Row="2" Style="{StaticResource ScrollEndButton}"
                                     Command="ScrollBar.ScrollToBottomCommand">
-                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgMuted}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/scroll-down.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconChevronDown}" Stroke="{StaticResource FgMuted}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </ControlTemplate>
@@ -453,11 +445,7 @@
                                 Margin="{StaticResource MarginVideoBadge}" Padding="{StaticResource PaddingVideoBadge}"
                                 Background="{StaticResource VideoBadgeBg}" CornerRadius="8"
                                 Visibility="{Binding IsCloudPlaceholder, Converter={StaticResource BoolToVis}}">
-                            <Rectangle Width="10" Height="10" Fill="{StaticResource FgIconLight}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/cloud.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path Width="10" Height="10" Data="{StaticResource IconCloud}" Stroke="{StaticResource FgIconLight}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Border>
 
                         <!-- Video badge -->
@@ -465,11 +453,7 @@
                                 Margin="{StaticResource MarginVideoBadge}" Padding="{StaticResource PaddingVideoBadge}"
                                 Background="{StaticResource VideoBadgeBg}" CornerRadius="8"
                                 Visibility="{Binding IsVideo, Converter={StaticResource BoolToVis}}">
-                            <Rectangle Width="10" Height="10" Fill="{StaticResource FgIconLight}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/video.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path Width="10" Height="10" Data="{StaticResource IconVideo}" Stroke="{StaticResource FgIconLight}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Border>
 
                         <!-- Selected overlay (sits on top, clipped to tile corners) -->
@@ -568,11 +552,7 @@
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Button.Template>
-                            <Rectangle Width="14" Height="14" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/toggle-sidebar.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path Width="14" Height="14" Data="{StaticResource IconPanelLeft}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                     </Border>
 
@@ -607,11 +587,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/back.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="12" Height="12" Data="{StaticResource IconChevronLeft}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="2" Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)"
@@ -634,11 +610,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/forward.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="12" Height="12" Data="{StaticResource IconChevronRight}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="4" Command="{Binding GoUpCommand}" ToolTip="Up (Alt+Up)"
@@ -661,11 +633,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/up.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="12" Height="12" Data="{StaticResource IconChevronUp}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -703,16 +671,8 @@
                                     </ControlTemplate>
                                 </Button.Template>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
-                                        <Rectangle.OpacityMask>
-                                            <ImageBrush ImageSource="/Assets/Icons/grid.png" Stretch="Uniform"/>
-                                        </Rectangle.OpacityMask>
-                                    </Rectangle>
-                                    <Rectangle Width="10" Height="10" Margin="4,0,0,1" VerticalAlignment="Center" Fill="{StaticResource FgIconSubtle}">
-                                        <Rectangle.OpacityMask>
-                                            <ImageBrush ImageSource="/Assets/Icons/grid-dropdown-chevron.png" Stretch="Uniform"/>
-                                        </Rectangle.OpacityMask>
-                                    </Rectangle>
+                                    <Path Width="14" Height="14" Data="{StaticResource IconLayoutGrid}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                    <Path Width="10" Height="10" Margin="4,0,0,1" VerticalAlignment="Center" Data="{StaticResource IconChevronDown}" Stroke="{StaticResource FgIconSubtle}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                                 </StackPanel>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
@@ -733,11 +693,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/columns.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="14" Height="14" Data="{StaticResource IconColumns3}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="4" x:Name="ViewListBtn" Click="ViewList_Click" ToolTip="List view"
@@ -757,11 +713,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/list.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="14" Height="14" Data="{StaticResource IconList}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -803,11 +755,7 @@
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Button.Template>
-                            <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/more.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path Width="14" Height="14" Data="{StaticResource IconMoreHorizontal}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                     </Border>
                 </StackPanel>
@@ -905,16 +853,12 @@
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="4">
-                                            <Rectangle x:Name="Icon" Width="10" Height="10" Fill="{StaticResource FgIconSubtle}">
-                                                <Rectangle.OpacityMask>
-                                                    <ImageBrush ImageSource="/Assets/Icons/clear-path.png" Stretch="Uniform"/>
-                                                </Rectangle.OpacityMask>
-                                            </Rectangle>
+                                            <Path x:Name="Icon" Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{StaticResource FgIconSubtle}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                                <Setter TargetName="Icon" Property="Fill" Value="{StaticResource FgInput}"/>
+                                                <Setter TargetName="Icon" Property="Stroke" Value="{StaticResource FgInput}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -953,11 +897,7 @@
                                     Style="{StaticResource IconButton}"
                                     Command="{Binding PinCurrentFolderCommand}"
                                     ToolTip="Pin current folder">
-                                <Rectangle Width="14" Height="14" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/pin-folder.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="14" Height="14" Data="{StaticResource IconPin}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <TextBlock Text="Pinned"
                                        Foreground="{StaticResource FgSecondary}"
@@ -1003,11 +943,7 @@
                                 </Style>
                             </Button.Style>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Rectangle Width="14" Height="14" Margin="0,0,7,0" VerticalAlignment="Center" Fill="{StaticResource FgMuted}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/recycle-bin.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="14" Height="14" Margin="0,0,7,0" VerticalAlignment="Center" Data="{StaticResource IconTrash2}" Stroke="{StaticResource FgMuted}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                                 <TextBlock Text="Recycle Bin"
                                            Foreground="{StaticResource FgSecondary}"
                                            FontSize="12"
@@ -1194,17 +1130,15 @@
                                         <ControlTemplate TargetType="GridViewColumnHeader">
                                             <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
                                                 <DockPanel LastChildFill="True">
-                                                    <Rectangle DockPanel.Dock="Right"
+                                                    <Path DockPanel.Dock="Right"
                                                           Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
-                                                          Fill="{StaticResource FgSecondary}"
+                                                          Data="{StaticResource IconChevronDown}" Stroke="{StaticResource FgSecondary}"
+                                                          StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"
                                                           Visibility="{Binding DataContext.IsSortedByName, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
-                                                        <Rectangle.OpacityMask>
-                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
-                                                        </Rectangle.OpacityMask>
-                                                        <Rectangle.RenderTransform>
+                                                        <Path.RenderTransform>
                                                             <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
-                                                        </Rectangle.RenderTransform>
-                                                    </Rectangle>
+                                                        </Path.RenderTransform>
+                                                    </Path>
                                                     <TextBlock Text="Name" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
                                                 </DockPanel>
                                             </Border>
@@ -1243,17 +1177,15 @@
                                         <ControlTemplate TargetType="GridViewColumnHeader">
                                             <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
                                                 <DockPanel LastChildFill="True">
-                                                    <Rectangle DockPanel.Dock="Right"
+                                                    <Path DockPanel.Dock="Right"
                                                           Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
-                                                          Fill="{StaticResource FgSecondary}"
+                                                          Data="{StaticResource IconChevronDown}" Stroke="{StaticResource FgSecondary}"
+                                                          StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"
                                                           Visibility="{Binding DataContext.IsSortedByDate, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
-                                                        <Rectangle.OpacityMask>
-                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
-                                                        </Rectangle.OpacityMask>
-                                                        <Rectangle.RenderTransform>
+                                                        <Path.RenderTransform>
                                                             <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
-                                                        </Rectangle.RenderTransform>
-                                                    </Rectangle>
+                                                        </Path.RenderTransform>
+                                                    </Path>
                                                     <TextBlock Text="Date Modified" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
                                                 </DockPanel>
                                             </Border>
@@ -1284,17 +1216,15 @@
                                         <ControlTemplate TargetType="GridViewColumnHeader">
                                             <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
                                                 <DockPanel LastChildFill="True">
-                                                    <Rectangle DockPanel.Dock="Right"
+                                                    <Path DockPanel.Dock="Right"
                                                           Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
-                                                          Fill="{StaticResource FgSecondary}"
+                                                          Data="{StaticResource IconChevronDown}" Stroke="{StaticResource FgSecondary}"
+                                                          StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"
                                                           Visibility="{Binding DataContext.IsSortedByType, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
-                                                        <Rectangle.OpacityMask>
-                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
-                                                        </Rectangle.OpacityMask>
-                                                        <Rectangle.RenderTransform>
+                                                        <Path.RenderTransform>
                                                             <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
-                                                        </Rectangle.RenderTransform>
-                                                    </Rectangle>
+                                                        </Path.RenderTransform>
+                                                    </Path>
                                                     <TextBlock Text="Type" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
                                                 </DockPanel>
                                             </Border>
@@ -1325,17 +1255,15 @@
                                         <ControlTemplate TargetType="GridViewColumnHeader">
                                             <Border x:Name="Hd" Background="Transparent" Padding="8,0,6,0" Height="28">
                                                 <DockPanel LastChildFill="True">
-                                                    <Rectangle DockPanel.Dock="Right"
+                                                    <Path DockPanel.Dock="Right"
                                                           Width="10" Height="10" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5"
-                                                          Fill="{StaticResource FgSecondary}"
+                                                          Data="{StaticResource IconChevronDown}" Stroke="{StaticResource FgSecondary}"
+                                                          StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"
                                                           Visibility="{Binding DataContext.IsSortedBySize, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToVis}}">
-                                                        <Rectangle.OpacityMask>
-                                                            <ImageBrush ImageSource="/Assets/Icons/sort-chevron.png" Stretch="Uniform"/>
-                                                        </Rectangle.OpacityMask>
-                                                        <Rectangle.RenderTransform>
+                                                        <Path.RenderTransform>
                                                             <ScaleTransform ScaleY="{Binding DataContext.SortIsAscending, RelativeSource={RelativeSource AncestorType=ListView}, Converter={StaticResource BoolToScale}}"/>
-                                                        </Rectangle.RenderTransform>
-                                                    </Rectangle>
+                                                        </Path.RenderTransform>
+                                                    </Path>
                                                     <TextBlock Text="Size" Foreground="{StaticResource FgSecondary}" FontSize="11" VerticalAlignment="Center"/>
                                                 </DockPanel>
                                             </Border>
@@ -1479,14 +1407,10 @@
                                                                    VerticalAlignment="Center" FontSize="12"
                                                                    TextTrimming="CharacterEllipsis"/>
                                                         <!-- Chevron for folders -->
-                                                        <Rectangle Grid.Column="2"
+                                                        <Path Grid.Column="2"
                                                               Width="10" Height="10" Margin="4,0,0,0"
-                                                              Fill="{StaticResource FgIconSubtle}"
-                                                              Visibility="{Binding IsDirectory, Converter={StaticResource BoolToVis}}">
-                                                            <Rectangle.OpacityMask>
-                                                                <ImageBrush ImageSource="/Assets/Icons/row-expand-chevron.png" Stretch="Uniform"/>
-                                                            </Rectangle.OpacityMask>
-                                                        </Rectangle>
+                                                              Data="{StaticResource IconChevronRight}" Stroke="{StaticResource FgIconSubtle}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"
+                                                              Visibility="{Binding IsDirectory, Converter={StaticResource BoolToVis}}"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
@@ -1578,11 +1502,7 @@
                         <Button Grid.Column="0"
                                 Command="{Binding DecreaseSizeCommand}"
                                 Style="{StaticResource IconButton}">
-                            <Rectangle Width="10" Height="10" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/minus.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                         <Slider Grid.Column="1"
                                 Margin="8,0"
@@ -1593,11 +1513,7 @@
                         <Button Grid.Column="2"
                                 Command="{Binding IncreaseSizeCommand}"
                                 Style="{StaticResource IconButton}">
-                            <Rectangle Width="10" Height="10" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/plus.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                     </Grid>
                     <TextBlock Margin="0,8,0,0"

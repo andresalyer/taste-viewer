@@ -4,6 +4,14 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Assets/Icons/IconGeometries.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+        <!-- ── Icons ─────────────────────────────────────────────────── -->
+        <sys:Double x:Key="IconStrokeThickness">1.25</sys:Double>
+
         <!-- ── Typography ───────────────────────────────────────────── -->
         <FontFamily x:Key="FontPrimary">/Taste;component/Fonts/#Inter</FontFamily>
 
@@ -81,5 +89,6 @@
         <!-- Accent -->
         <SolidColorBrush x:Key="Accent"       Color="#0078D4"/>
         <SolidColorBrush x:Key="VideoBadgeBg" Color="#BB111111"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

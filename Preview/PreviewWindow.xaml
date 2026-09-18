@@ -111,11 +111,7 @@
                         Click="Info_Click"
                         ToolTip="Keyboard shortcuts"
                         Margin="0,0,6,0">
-                    <Rectangle Width="14" Height="14" Fill="{StaticResource FgMuted}">
-                        <Rectangle.OpacityMask>
-                            <ImageBrush ImageSource="/Assets/Icons/info.png" Stretch="Uniform"/>
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
+                    <Path Width="14" Height="14" Data="{StaticResource IconInfo}" Stroke="{StaticResource FgMuted}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                 </Button>
 
                 <!-- Undo delete — shown temporarily after a delete -->
@@ -162,11 +158,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/minus.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <TextBlock x:Name="ZoomLabel" Grid.Column="2" Text="100%"
@@ -188,69 +180,31 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/plus.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
-                    <!-- Fit / Fullscreen pill -->
+                    <!-- Fit pill -->
                     <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Click="Fit_Click" ToolTip="Fit to window (Ctrl+0)">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="10,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/fit.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
-                            </Button>
-                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
-                            <Button Grid.Column="2" x:Name="FullscreenBtn" Click="Fullscreen_Click" ToolTip="Toggle fullscreen (F11)">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="10,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <Rectangle Width="14" Height="14" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/fullscreen.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
-                            </Button>
-                        </Grid>
+                        <Button Click="Fit_Click" ToolTip="Fit to window (Ctrl+0)">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="13" Padding="10,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Width="14" Height="14" Data="{StaticResource IconMaximize2}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                        </Button>
                     </Border>
 
                     <!-- Speed pill -->
@@ -281,11 +235,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/minus.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <TextBlock x:Name="SpeedLabel" Grid.Column="2" Text="1×"
@@ -307,47 +257,11 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Rectangle Width="10" Height="10" Fill="{StaticResource FgIcon}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/plus.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
 
-                    <!-- Scrubber pill -->
-                    <Border x:Name="ScrubberPill" Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
-                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center"
-                            Visibility="Collapsed">
-                        <ToggleButton x:Name="ScrubberToggleBtn" Click="ScrubberToggle_Click"
-                                      ToolTip="Toggle scrubber"
-                                      Foreground="{StaticResource FgIcon}">
-                            <ToggleButton.Template>
-                                <ControlTemplate TargetType="ToggleButton">
-                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="13" Padding="11,1" Height="26">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                        </Trigger>
-                                        <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#2AFFFFFF"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </ToggleButton.Template>
-                            <Rectangle Width="14" Height="14" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/toggle-scrubber.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
-                        </ToggleButton>
-                    </Border>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -405,12 +319,22 @@
                        Focusable="False"
                        Visibility="Collapsed"/>
 
+            <!-- Scrubber hover zone — hovering the bottom edge reveals the scrubber -->
+            <Border x:Name="ScrubberHoverZone"
+                    Height="72"
+                    VerticalAlignment="Bottom"
+                    Background="Transparent"
+                    Focusable="False"
+                    MouseEnter="ScrubberHoverZone_MouseEnter"
+                    MouseLeave="ScrubberHoverZone_MouseLeave"/>
+
             <!-- Scrubber overlay -->
             <Border x:Name="ScrubberOverlay"
                     VerticalAlignment="Bottom"
                     Background="#CC000000"
                     Padding="14,8,14,10"
                     Visibility="Collapsed"
+                    Opacity="0"
                     IsHitTestVisible="True"
                     Focusable="False">
                 <Grid>
@@ -450,16 +374,8 @@
                             </ControlTemplate>
                         </Button.Template>
                         <Grid>
-                            <Rectangle x:Name="PlayIcon" Width="14" Height="14" Fill="White" Visibility="Collapsed">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/play.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
-                            <Rectangle x:Name="PauseIcon" Width="14" Height="14" Fill="White">
-                                <Rectangle.OpacityMask>
-                                    <ImageBrush ImageSource="/Assets/Icons/pause.png" Stretch="Uniform"/>
-                                </Rectangle.OpacityMask>
-                            </Rectangle>
+                            <Path x:Name="PlayIcon" Width="14" Height="14" Visibility="Collapsed" Data="{StaticResource IconPlay}" Stroke="White" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                            <Path x:Name="PauseIcon" Width="14" Height="14" Data="{StaticResource IconPause}" Stroke="White" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Grid>
                     </Button>
 
@@ -593,12 +509,8 @@
                                                           Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
                                                           StrokeThickness="1.8" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                                 </Canvas>
-                                                <Rectangle x:Name="MutedIcon" Width="24" Height="24" Visibility="Collapsed"
-                                                           Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}">
-                                                    <Rectangle.OpacityMask>
-                                                        <ImageBrush ImageSource="/Assets/Icons/speaker-muted.png" Stretch="Uniform"/>
-                                                    </Rectangle.OpacityMask>
-                                                </Rectangle>
+                                                <Path x:Name="MutedIcon" Width="24" Height="24" Visibility="Collapsed"
+                                                           Data="{StaticResource IconVolumeX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                                             </Canvas>
                                         </Viewbox>
                                     </Border>
@@ -714,11 +626,7 @@
                                         </Setter>
                                     </Style>
                                 </Button.Style>
-                                <Rectangle Width="10" Height="10" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                    <Rectangle.OpacityMask>
-                                        <ImageBrush ImageSource="/Assets/Icons/clear-path.png" Stretch="Uniform"/>
-                                    </Rectangle.OpacityMask>
-                                </Rectangle>
+                                <Path Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
 
