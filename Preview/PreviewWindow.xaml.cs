@@ -812,6 +812,8 @@ public partial class PreviewWindow : Window
         ResizeMode   = ResizeMode.NoResize;
         WindowState  = WindowState.Maximized;
         _isFullscreen = true;
+        ExpandIcon.Visibility   = Visibility.Collapsed;
+        MinimizeIcon.Visibility = Visibility.Visible;
     }
 
     void ExitFullscreen()
@@ -820,6 +822,8 @@ public partial class PreviewWindow : Window
         ResizeMode    = _savedResizeMode;
         WindowState   = _savedWindowState;
         _isFullscreen = false;
+        ExpandIcon.Visibility   = Visibility.Visible;
+        MinimizeIcon.Visibility = Visibility.Collapsed;
         Dispatcher.BeginInvoke(DispatcherPriority.Background, (Action)ApplyDarkTitleBar);
     }
 

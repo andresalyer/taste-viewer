@@ -228,7 +228,10 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="14" Height="14" Data="{StaticResource IconExpand}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Grid>
+                                    <Path x:Name="ExpandIcon" Width="14" Height="14" Data="{StaticResource IconExpand}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                    <Path x:Name="MinimizeIcon" Width="14" Height="14" Visibility="Collapsed" Data="{StaticResource IconMinimize}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                </Grid>
                             </Button>
                         </Grid>
                     </Border>
