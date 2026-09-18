@@ -346,6 +346,32 @@ public static class ShellInterop
         DwmSetWindowAttribute(hwnd, 20 /* DWMWA_USE_IMMERSIVE_DARK_MODE */, ref dark, sizeof(int));
     }
 
+    private const int  GWL_EXSTYLE         = -20;
+    private const int  WS_EX_DLGMODALFRAME = 0x0001;
+    private const uint SWP_NOSIZE          = 0x0001;
+    private const uint SWP_NOMOVE          = 0x0002;
+    private const uint SWP_NOZORDER        = 0x0004;
+    private const uint SWP_FRAMECHANGED    = 0x0020;
+
+    [DllImport("user32.dll")]
+    private static extern int GetWindowLong(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hwnd, IntPtr hwndInsertAfter, int x, int y, int cx, int cy, uint flags);
+
+    // Blanks the small icon slot in the title bar caption without touching the taskbar/
+    // Alt-Tab icon (those read from the exe/window class, not the caption frame style).
+    public static void HideTitleBarIcon(IntPtr hwnd)
+    {
+        int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+        SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_DLGMODALFRAME);
+        SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+    }
+
     // ── Recycle Bin helpers ───────────────────────────────────────
 
     public static (string IFile, string RFile)? FindRecycleBinEntry(string originalPath)

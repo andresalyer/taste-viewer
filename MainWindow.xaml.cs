@@ -56,6 +56,7 @@ public partial class MainWindow : Window
         var hwnd = new WindowInteropHelper(this).Handle;
         Vm.OwnerHwnd = hwnd;
         ShellInterop.SetDarkTitleBar(hwnd);
+        ShellInterop.HideTitleBarIcon(hwnd);
 
         Vm.PropertyChanged += OnVmPropertyChanged;
 
