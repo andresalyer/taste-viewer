@@ -802,6 +802,7 @@
                         BorderBrush="{StaticResource BorderDefault}"
                         BorderThickness="1"
                         CornerRadius="13"
+                        Height="28"
                         Margin="{StaticResource NavHGap}"
                         PreviewMouseLeftButtonDown="PathBar_ContainerPreviewMouseDown">
                     <Grid>
