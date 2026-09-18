@@ -110,6 +110,7 @@
                 <Button DockPanel.Dock="Right"
                         Click="Info_Click"
                         ToolTip="Keyboard shortcuts"
+                        AutomationProperties.Name="Keyboard shortcuts"
                         Margin="0,0,6,0">
                     <Path Width="14" Height="14" Data="{StaticResource IconInfo}" Stroke="{StaticResource FgMuted}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                 </Button>
@@ -142,7 +143,8 @@
                                 <ColumnDefinition Width="1"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+−)">
+                            <Button Grid.Column="0" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+−)"
+                                    AutomationProperties.Name="Zoom out">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="12,1" Height="26">
@@ -162,9 +164,11 @@
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <TextBlock x:Name="ZoomLabel" Grid.Column="2" Text="100%"
-                                       TextAlignment="Center" Focusable="False"/>
+                                       TextAlignment="Center" Focusable="False"
+                                       AutomationProperties.LiveSetting="Polite"/>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
-                            <Button Grid.Column="4" Click="ZoomIn_Click" ToolTip="Zoom in (Ctrl++)">
+                            <Button Grid.Column="4" Click="ZoomIn_Click" ToolTip="Zoom in (Ctrl++)"
+                                    AutomationProperties.Name="Zoom in">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="12,1" Height="26">
@@ -196,7 +200,8 @@
                                 <ColumnDefinition Width="1"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" x:Name="SpeedDownBtn" Click="SpeedDown_Click" ToolTip="Slower">
+                            <Button Grid.Column="0" x:Name="SpeedDownBtn" Click="SpeedDown_Click" ToolTip="Slower"
+                                    AutomationProperties.Name="Slower">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="12,1" Height="26">
@@ -216,9 +221,11 @@
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <TextBlock x:Name="SpeedLabel" Grid.Column="2" Text="1×"
-                                       TextAlignment="Center" Focusable="False"/>
+                                       TextAlignment="Center" Focusable="False"
+                                       AutomationProperties.LiveSetting="Polite"/>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
-                            <Button Grid.Column="4" x:Name="SpeedUpBtn" Click="SpeedUp_Click" ToolTip="Faster">
+                            <Button Grid.Column="4" x:Name="SpeedUpBtn" Click="SpeedUp_Click" ToolTip="Faster"
+                                    AutomationProperties.Name="Faster">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="12,1" Height="26">
@@ -328,7 +335,8 @@
                             Click="PlayPause_Click"
                             Focusable="False"
                             VerticalAlignment="Center"
-                            Margin="0,0,10,0">
+                            Margin="0,0,10,0"
+                            AutomationProperties.Name="Play or pause">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd"
@@ -419,6 +427,7 @@
                                         Maximum="1"
                                         Focusable="False"
                                         Cursor="Hand"
+                                        AutomationProperties.Name="Volume"
                                         ValueChanged="VolumeSlider_ValueChanged">
                                     <Slider.Template>
                                         <ControlTemplate TargetType="Slider">
@@ -462,7 +471,8 @@
                                       Click="MuteBtn_Click"
                                       Focusable="False"
                                       VerticalAlignment="Center"
-                                      Foreground="#CCFFFFFF">
+                                      Foreground="#CCFFFFFF"
+                                      AutomationProperties.Name="Mute">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border x:Name="Bd"
@@ -577,7 +587,9 @@
                                     Foreground="#888888"
                                     BorderThickness="0"
                                     Padding="6,4"
-                                    VerticalAlignment="Center">
+                                    VerticalAlignment="Center"
+                                    ToolTip="Close"
+                                    AutomationProperties.Name="Close">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="Transparent"/>

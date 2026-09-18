@@ -326,6 +326,7 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="AutomationProperties.Name" Value="{Binding DisplayName}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
@@ -349,6 +350,7 @@
             <Setter Property="Margin" Value="0"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="AutomationProperties.Name" Value="{Binding DisplayName}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
@@ -564,6 +566,7 @@
                     <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center">
                         <Button Command="{Binding ToggleSidebarCommand}" ToolTip="Toggle sidebar"
+                                AutomationProperties.Name="Toggle sidebar"
                                 Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
@@ -596,17 +599,20 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" Style="{StaticResource PillSegmentButton}" Tag="{StaticResource PillRadiusLeft}"
-                                    Command="{Binding GoBackCommand}" ToolTip="Back (Alt+Left)">
+                                    Command="{Binding GoBackCommand}" ToolTip="Back (Alt+Left)"
+                                    AutomationProperties.Name="Back">
                                 <Path Width="12" Height="12" Data="{StaticResource IconChevronLeft}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="2" Style="{StaticResource PillSegmentButton}" Tag="0"
-                                    Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)">
+                                    Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)"
+                                    AutomationProperties.Name="Forward">
                                 <Path Width="12" Height="12" Data="{StaticResource IconChevronRight}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="4" Style="{StaticResource PillSegmentButton}" Tag="{StaticResource PillRadiusRight}"
-                                    Command="{Binding GoUpCommand}" ToolTip="Up (Alt+Up)">
+                                    Command="{Binding GoUpCommand}" ToolTip="Up (Alt+Up)"
+                                    AutomationProperties.Name="Up">
                                 <Path Width="12" Height="12" Data="{StaticResource IconChevronUp}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
@@ -628,6 +634,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" x:Name="ViewGridBtn" Click="ViewGrid_Click" ToolTip="Grid view"
+                                    AutomationProperties.Name="Grid view"
                                     Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
@@ -651,6 +658,7 @@
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="2" x:Name="ViewColumnBtn" Click="ViewColumn_Click" ToolTip="Column view"
+                                    AutomationProperties.Name="Column view"
                                     Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
@@ -671,6 +679,7 @@
                             </Button>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="4" x:Name="ViewListBtn" Click="ViewList_Click" ToolTip="List view"
+                                    AutomationProperties.Name="List view"
                                     Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
@@ -696,6 +705,7 @@
                     <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
                         <Button x:Name="MoreBtn" Click="MoreBtn_Click" ToolTip="More options"
+                                AutomationProperties.Name="More options"
                                 Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="MoreMenu">
@@ -822,6 +832,8 @@
                             <Button HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
                                     Command="{Binding ClearPathBarCommand}"
+                                    ToolTip="Clear"
+                                    AutomationProperties.Name="Clear"
                                     Focusable="False"
                                     Cursor="Hand">
                                 <Button.Template>
@@ -870,7 +882,8 @@
                             <Button DockPanel.Dock="Right"
                                     Style="{StaticResource IconButton}"
                                     Command="{Binding PinCurrentFolderCommand}"
-                                    ToolTip="Pin current folder">
+                                    ToolTip="Pin current folder"
+                                    AutomationProperties.Name="Pin current folder">
                                 <Path Width="14" Height="14" Data="{StaticResource IconPin}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <TextBlock Text="Pinned"
@@ -887,6 +900,7 @@
                             BorderThickness="0,1,0,0">
                         <Button Command="{Binding OpenRecycleBinCommand}"
                                 ToolTip="Open Recycle Bin"
+                                AutomationProperties.Name="Open Recycle Bin"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Cursor="Hand"
@@ -973,6 +987,7 @@
                           Background="Transparent"
                           Cursor="SizeWE"
                           Visibility="Collapsed"
+                          AutomationProperties.Name="Resize sidebar"
                           DragCompleted="SidebarSplitter_DragCompleted"/>
 
             <!-- Main scroll area — grid view -->
@@ -1076,6 +1091,7 @@
                         <Setter Property="Padding"     Value="0"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Foreground"  Value="{StaticResource FgPrimary}"/>
+                        <Setter Property="AutomationProperties.Name" Value="{Binding FileName}"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
@@ -1344,6 +1360,7 @@
                                                     <Setter Property="BorderThickness" Value="0"/>
                                                     <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
                                                     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                                    <Setter Property="AutomationProperties.Name" Value="{Binding FileName}"/>
                                                     <Setter Property="Template">
                                                         <Setter.Value>
                                                             <ControlTemplate TargetType="ListBoxItem">
@@ -1398,6 +1415,7 @@
                                         <!-- Resize handle -->
                                         <Thumb HorizontalAlignment="Right"
                                                Style="{StaticResource ColumnResizeThumb}"
+                                               AutomationProperties.Name="Resize column"
                                                DragDelta="ColumnResizeThumb_DragDelta"/>
                                     </Grid>
                                 </Border>
@@ -1424,6 +1442,7 @@
                 <Button DockPanel.Dock="Right"
                         Command="{Binding UndoDeleteCommand}"
                         Visibility="{Binding UndoAvailable, Converter={StaticResource BoolToVis}}"
+                        AutomationProperties.Name="Undo delete"
                         Cursor="Hand"
                         Focusable="False">
                     <Button.Template>
@@ -1448,7 +1467,8 @@
                 <TextBlock Text="{Binding StatusText}"
                            Foreground="{StaticResource FgSecondary}"
                            FontSize="12"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           AutomationProperties.LiveSetting="Polite"/>
             </DockPanel>
         </Border>
         <!-- Size popup -->
@@ -1475,7 +1495,9 @@
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0"
                                 Command="{Binding DecreaseSizeCommand}"
-                                Style="{StaticResource IconButton}">
+                                Style="{StaticResource IconButton}"
+                                ToolTip="Decrease thumbnail size"
+                                AutomationProperties.Name="Decrease thumbnail size">
                             <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                         <Slider Grid.Column="1"
@@ -1483,10 +1505,13 @@
                                 VerticalAlignment="Center"
                                 Style="{StaticResource DarkSlider}"
                                 Minimum="100" Maximum="520"
-                                Value="{Binding ThumbnailSize, Mode=TwoWay}"/>
+                                Value="{Binding ThumbnailSize, Mode=TwoWay}"
+                                AutomationProperties.Name="Thumbnail size"/>
                         <Button Grid.Column="2"
                                 Command="{Binding IncreaseSizeCommand}"
-                                Style="{StaticResource IconButton}">
+                                Style="{StaticResource IconButton}"
+                                ToolTip="Increase thumbnail size"
+                                AutomationProperties.Name="Increase thumbnail size">
                             <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                     </Grid>
