@@ -683,9 +683,21 @@ public partial class PreviewWindow : Window
 
     void ApplyScrubberState(bool show)
     {
-        ScrubberOverlay.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        if (!show) VolumePopup.IsOpen = false;
-        if (show) StartPosTimer(); else StopPosTimer();
+        if (show)
+        {
+            ScrubberOverlay.Visibility = Visibility.Visible;
+            var anim = new DoubleAnimation(ScrubberOverlay.Opacity, 1, TimeSpan.FromMilliseconds(150));
+            ScrubberOverlay.BeginAnimation(UIElement.OpacityProperty, anim);
+            StartPosTimer();
+        }
+        else
+        {
+            var anim = new DoubleAnimation(ScrubberOverlay.Opacity, 0, TimeSpan.FromMilliseconds(150));
+            anim.Completed += (_, _) => ScrubberOverlay.Visibility = Visibility.Collapsed;
+            ScrubberOverlay.BeginAnimation(UIElement.OpacityProperty, anim);
+            VolumePopup.IsOpen = false;
+            StopPosTimer();
+        }
     }
 
     void VolumePanel_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)

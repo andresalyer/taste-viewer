@@ -334,6 +334,7 @@
                     Background="#CC000000"
                     Padding="14,8,14,10"
                     Visibility="Collapsed"
+                    Opacity="0"
                     IsHitTestVisible="True"
                     Focusable="False">
                 <Grid>
