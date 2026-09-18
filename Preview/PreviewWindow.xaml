@@ -209,7 +209,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="14" Height="14" Data="{StaticResource IconScan}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="14" Height="14" Data="{StaticResource IconMaximize2}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="2" x:Name="FullscreenBtn" Click="Fullscreen_Click" ToolTip="Toggle fullscreen (F11)">
