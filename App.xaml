@@ -39,7 +39,7 @@
         <Thickness x:Key="Space48">48</Thickness>
 
         <!-- ── Directional spacing tokens ───────────────────────────── -->
-        <Thickness x:Key="NavHGap">12,0,0,0</Thickness>           <!-- left gap between toolbar items -->
+        <Thickness x:Key="NavHGap">12,0,8,0</Thickness>            <!-- path bar's gap from the nav pill and the search icon -->
         <Thickness x:Key="PaddingToolbarH">8,0,8,0</Thickness>    <!-- toolbar left/right inset -->
         <Thickness x:Key="PaddingPathBar">12,4</Thickness>        <!-- path bar padding -->
         <Thickness x:Key="PaddingIconBtn">8,4</Thickness>         <!-- icon button hit area -->
