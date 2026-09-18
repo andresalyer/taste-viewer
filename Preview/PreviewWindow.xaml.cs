@@ -824,8 +824,6 @@ public partial class PreviewWindow : Window
         ResizeMode   = ResizeMode.NoResize;
         WindowState  = WindowState.Maximized;
         _isFullscreen = true;
-        ExpandIcon.Visibility   = Visibility.Collapsed;
-        MinimizeIcon.Visibility = Visibility.Visible;
     }
 
     void ExitFullscreen()
@@ -834,8 +832,6 @@ public partial class PreviewWindow : Window
         ResizeMode    = _savedResizeMode;
         WindowState   = _savedWindowState;
         _isFullscreen = false;
-        ExpandIcon.Visibility   = Visibility.Visible;
-        MinimizeIcon.Visibility = Visibility.Collapsed;
         Dispatcher.BeginInvoke(DispatcherPriority.Background, (Action)ApplyDarkTitleBar);
     }
 
@@ -1046,8 +1042,7 @@ public partial class PreviewWindow : Window
     void CloseInfo_Click(object sender, RoutedEventArgs e)  => ShortcutsOverlay.Visibility = Visibility.Collapsed;
     void ZoomOut_Click(object sender, RoutedEventArgs e)    => ZoomBy(1.0 / 1.25, null);
     void ZoomIn_Click(object sender, RoutedEventArgs e)     => ZoomBy(1.25, null);
-    void Fit_Click(object sender, RoutedEventArgs e)        => SetFitZoom();
-    void Fullscreen_Click(object sender, RoutedEventArgs e) => ToggleFullscreen();
+    void Fit_Click(object sender, RoutedEventArgs e) => SetFitZoom();
     void PlayPause_Click(object sender, RoutedEventArgs e)  => TogglePlayPause();
     void SpeedDown_Click(object sender, RoutedEventArgs e)  => SetSpeed(_speedIndex - 1);
     void SpeedUp_Click(object sender, RoutedEventArgs e)    => SetSpeed(_speedIndex + 1);
