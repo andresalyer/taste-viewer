@@ -137,7 +137,11 @@ public class MainViewModel : ObservableObject, IDisposable
 
     public void InitColumns()
     {
-        foreach (var col in Columns) col.Dispose();
+        foreach (var col in Columns)
+        {
+            col.PropertyChanged -= ColumnViewModel_PropertyChanged;
+            col.Dispose();
+        }
         Columns.Clear();
         if (!string.IsNullOrEmpty(_currentPath))
             AppendColumn(_currentPath);
@@ -148,10 +152,29 @@ public class MainViewModel : ObservableObject, IDisposable
         int idx = Columns.IndexOf(source);
         while (Columns.Count > idx + 1)
         {
+            Columns[^1].PropertyChanged -= ColumnViewModel_PropertyChanged;
             Columns[^1].Dispose();
             Columns.RemoveAt(Columns.Count - 1);
         }
         AppendColumn(folder.FullPath);
+    }
+
+    private void ColumnViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ColumnViewModel.SelectedItem))
+            RecomputeColumnSelectionStates();
+    }
+
+    // Only the deepest column with a selection shows the full "active" highlight; any
+    // ancestor column still holding a selection (the path drilled through to get here)
+    // shows a dimmer, secondary highlight instead.
+    private void RecomputeColumnSelectionStates()
+    {
+        int deepest = -1;
+        for (int i = 0; i < Columns.Count; i++)
+            if (Columns[i].SelectedItem != null) deepest = i;
+        for (int i = 0; i < Columns.Count; i++)
+            Columns[i].IsPrimarySelection = i == deepest;
     }
 
     // ── Drag/drop move & copy — optimistic UI sync ─────────────────
@@ -242,7 +265,9 @@ public class MainViewModel : ObservableObject, IDisposable
     private async void AppendColumn(string path)
     {
         var col = new ColumnViewModel(path);
+        col.PropertyChanged += ColumnViewModel_PropertyChanged;
         Columns.Add(col);
+        RecomputeColumnSelectionStates();
         await col.LoadAsync();
         var token = _loadCts.Token;
         foreach (var item in col.Items)

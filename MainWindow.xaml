@@ -1383,7 +1383,6 @@
                                                  VirtualizingPanel.IsVirtualizing="True"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                                  AllowDrop="True"
-                                                 GotFocus="ColumnListBox_GotFocus"
                                                  SelectionChanged="ColumnPanel_SelectionChanged"
                                                  MouseDoubleClick="ColumnListBox_MouseDoubleClick"
                                                  PreviewMouseLeftButtonDown="ColumnListBox_PreviewMouseLeftButtonDown"
@@ -1411,6 +1410,15 @@
                                                                     <Trigger Property="IsSelected" Value="True">
                                                                         <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                                                     </Trigger>
+                                                                    <!-- Ancestor column drilled past (still selected, but no longer the
+                                                                         active one) shows a dimmer, secondary highlight instead. -->
+                                                                    <MultiDataTrigger>
+                                                                        <MultiDataTrigger.Conditions>
+                                                                            <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True"/>
+                                                                            <Condition Binding="{Binding DataContext.IsPrimarySelection, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="False"/>
+                                                                        </MultiDataTrigger.Conditions>
+                                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                                                    </MultiDataTrigger>
                                                                 </ControlTemplate.Triggers>
                                                             </ControlTemplate>
                                                         </Setter.Value>

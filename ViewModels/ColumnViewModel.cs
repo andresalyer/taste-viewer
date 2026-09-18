@@ -32,6 +32,16 @@ public class ColumnViewModel : ObservableObject, IDisposable
         set => SetField(ref _selectedItem, value);
     }
 
+    // True when this is the deepest column with a selection (the "active" one, full highlight).
+    // An ancestor column that still has a selection but was drilled past shows the dimmer,
+    // secondary highlight instead. Recomputed by MainViewModel.RecomputeColumnSelectionStates.
+    private bool _isPrimarySelection = true;
+    public bool IsPrimarySelection
+    {
+        get => _isPrimarySelection;
+        set => SetField(ref _isPrimarySelection, value);
+    }
+
     private bool _isLoading;
     public bool IsLoading
     {
