@@ -1,5 +1,7 @@
 # Taste
 
+![Taste logo](docs/screenshots/logo.png)
+
 A fast, media-focused replacement for Windows Explorer — built for browsing and reviewing images, GIFs, and videos, with a built-in floating preview window.
 
 ## Download
