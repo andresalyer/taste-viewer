@@ -693,6 +693,10 @@ public partial class MainWindow : Window
     private void ViewGrid_Click(object sender, RoutedEventArgs e)
     {
         Vm.ViewMode = ViewMode.Grid;
+    }
+    private void ViewGridOptions_Click(object sender, RoutedEventArgs e)
+    {
+        Vm.ViewMode = ViewMode.Grid;
         SizePopup.IsOpen = !SizePopup.IsOpen;
     }
     private void ViewList_Click(object sender, RoutedEventArgs e)
