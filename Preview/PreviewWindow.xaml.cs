@@ -70,6 +70,11 @@ public partial class PreviewWindow : Window
     private double            _panOriginH = 0;
     private double            _panOriginV = 0;
 
+    // Drag the current file out to another app (e.g. dropping into ComfyUI's Load
+    // Image). Only armed in fit mode — when zoomed in, the same gesture pans instead.
+    private bool                  _fileDragArmed;
+    private System.Windows.Point  _fileDragStartPoint;
+
     // Fullscreen
     private bool        _isFullscreen;
     private WindowState _savedWindowState;
@@ -270,7 +275,13 @@ public partial class PreviewWindow : Window
         _fitMode  = true;
         ZoomTransform.ScaleX = ZoomTransform.ScaleY = _scale;
         ContentGrid.Margin = new Thickness(0);
-        UpdateZoomLabel();
+    }
+
+    // Ctrl+0 — jumps straight to 1:1 (100%), centered like any other zoom step.
+    void ZoomToActualSize()
+    {
+        if (_scale <= 0) return;
+        ZoomBy(1.0 / _scale, null);
     }
 
     void ZoomBy(double factor, System.Windows.Point? mouseViewport)
@@ -295,7 +306,6 @@ public partial class PreviewWindow : Window
         _scale   = newScale;
         _fitMode = false;
         ZoomTransform.ScaleX = ZoomTransform.ScaleY = _scale;
-        UpdateZoomLabel();
         UpdatePanMargin();
 
         Scroller.ScrollToHorizontalOffset(vw / 2 + natX * _scale - mp.X);
@@ -315,17 +325,19 @@ public partial class PreviewWindow : Window
             Scroller.ViewportHeight / 2);
     }
 
-    void UpdateZoomLabel()
-    {
-        ZoomLabel.Text = _fitScale > 0
-            ? $"{_scale / _fitScale * 100:0}%"
-            : "—";
-    }
-
     void Scroller_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (_fitMode) SetFitZoom();
         else UpdatePanMargin();
+    }
+
+    // Maximizing jumps the window size in one step rather than a gradual drag-resize;
+    // defer the refit past the current layout pass so the Scroller's viewport size has
+    // already settled to its final maximized dimensions before we measure it.
+    void Window_StateChanged(object? sender, EventArgs e)
+    {
+        if (_fitMode)
+            Dispatcher.BeginInvoke(SetFitZoom, DispatcherPriority.Loaded);
     }
 
     static Cursor GetPanCursor()
@@ -373,7 +385,17 @@ public partial class PreviewWindow : Window
 
     void Scroller_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (_fitMode) return;
+        if (_fitMode)
+        {
+            // Not zoomed, so this gesture isn't a pan — arm a possible drag-out of the
+            // current file instead. Scroller_MouseMove promotes it once past the threshold.
+            if (_index >= 0 && _index < _files.Count)
+            {
+                _fileDragArmed      = true;
+                _fileDragStartPoint = e.GetPosition(null);
+            }
+            return;
+        }
         _isPanning  = true;
         _panStart   = e.GetPosition(Scroller);
         _panOriginH = Scroller.HorizontalOffset;
@@ -385,15 +407,31 @@ public partial class PreviewWindow : Window
 
     void Scroller_MouseMove(object sender, MouseEventArgs e)
     {
+        if (_fileDragArmed)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed) { _fileDragArmed = false; return; }
+
+            var pos  = e.GetPosition(null);
+            var diff = pos - _fileDragStartPoint;
+            if (Math.Abs(diff.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(diff.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+
+            _fileDragArmed = false;
+            string path = _files[_index];
+            DragDrop.DoDragDrop(Scroller, new DataObject(DataFormats.FileDrop, new[] { path }), DragDropEffects.Copy);
+            return;
+        }
+
         if (!_isPanning) return;
-        var pos = e.GetPosition(Scroller);
-        Scroller.ScrollToHorizontalOffset(_panOriginH - (pos.X - _panStart.X));
-        Scroller.ScrollToVerticalOffset  (_panOriginV - (pos.Y - _panStart.Y));
+        var panPos = e.GetPosition(Scroller);
+        Scroller.ScrollToHorizontalOffset(_panOriginH - (panPos.X - _panStart.X));
+        Scroller.ScrollToVerticalOffset  (_panOriginV - (panPos.Y - _panStart.Y));
         e.Handled = true;
     }
 
     void Scroller_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        _fileDragArmed = false;
         if (!_isPanning) return;
         _isPanning = false;
         Scroller.ReleaseMouseCapture();
@@ -1045,6 +1083,10 @@ public partial class PreviewWindow : Window
                 if (ctrl) { ZoomBy(1.25, null);        e.Handled = true; }
                 else      { SetSpeed(_speedIndex + 1); e.Handled = true; }
                 break;
+            case Key.D0:
+            case Key.NumPad0:
+                if (ctrl) { ZoomToActualSize(); e.Handled = true; }
+                break;
         }
     }
 
@@ -1052,8 +1094,6 @@ public partial class PreviewWindow : Window
 
     void Info_Click(object sender, RoutedEventArgs e)       => ShortcutsOverlay.Visibility = Visibility.Visible;
     void CloseInfo_Click(object sender, RoutedEventArgs e)  => ShortcutsOverlay.Visibility = Visibility.Collapsed;
-    void ZoomOut_Click(object sender, RoutedEventArgs e)    => ZoomBy(1.0 / 1.25, null);
-    void ZoomIn_Click(object sender, RoutedEventArgs e)     => ZoomBy(1.25, null);
     void PlayPause_Click(object sender, RoutedEventArgs e)  => TogglePlayPause();
     void SpeedDown_Click(object sender, RoutedEventArgs e)  => SetSpeed(_speedIndex - 1);
     void SpeedUp_Click(object sender, RoutedEventArgs e)    => SetSpeed(_speedIndex + 1);

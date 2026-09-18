@@ -10,6 +10,7 @@
         ShowInTaskbar="True"
         Visibility="Hidden"
         PreviewKeyDown="Window_KeyDown"
+        StateChanged="Window_StateChanged"
         Closing="Window_Closing"
         RenderOptions.BitmapScalingMode="HighQuality">
     <DockPanel>
@@ -127,67 +128,6 @@
 
                 <!-- Left-side controls -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0">
-                    <!-- Zoom pill -->
-                    <Border Background="{StaticResource PillBg}"
-                            BorderBrush="{StaticResource PillBorder}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource PillRadius}"
-                            Height="26"
-                            VerticalAlignment="Center"
-                            Margin="2,0,8,0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="50"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+−)"
-                                    AutomationProperties.Name="Zoom out">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="12,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
-                            </Button>
-                            <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
-                            <TextBlock x:Name="ZoomLabel" Grid.Column="2" Text="100%"
-                                       TextAlignment="Center" Focusable="False"
-                                       AutomationProperties.LiveSetting="Polite"/>
-                            <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
-                            <Button Grid.Column="4" Click="ZoomIn_Click" ToolTip="Zoom in (Ctrl++)"
-                                    AutomationProperties.Name="Zoom in">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="12,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
-                            </Button>
-                        </Grid>
-                    </Border>
                     <!-- Speed pill -->
                     <Border x:Name="SpeedPill" Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="0,0,8,0"
@@ -647,6 +587,10 @@
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Style="{StaticResource Key}"  Text="Ctrl +  /  Ctrl −"/>
                             <TextBlock Style="{StaticResource Desc}" Text="Zoom in / out"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Style="{StaticResource Key}"  Text="Ctrl + 0"/>
+                            <TextBlock Style="{StaticResource Desc}" Text="Actual size (1:1)"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Style="{StaticResource Key}"  Text="Double-click"/>
