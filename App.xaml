@@ -78,6 +78,8 @@
         <SolidColorBrush x:Key="PillBg"     Color="#08FFFFFF"/>  <!-- pill fill -->
         <SolidColorBrush x:Key="PillBorder" Color="#18FFFFFF"/>  <!-- pill outline + dividers -->
         <CornerRadius    x:Key="PillRadius"  >13</CornerRadius>
+        <CornerRadius    x:Key="PillRadiusLeft"  >13,0,0,13</CornerRadius>
+        <CornerRadius    x:Key="PillRadiusRight" >0,13,13,0</CornerRadius>
         <!-- Accent -->
         <SolidColorBrush x:Key="Accent"       Color="#0078D4"/>
         <SolidColorBrush x:Key="VideoBadgeBg" Color="#BB111111"/>
