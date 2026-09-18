@@ -8,6 +8,9 @@ A fast, media-focused replacement for Windows Explorer — built for browsing an
 
 Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installation required — the app is self-contained.
 
+![Main window](docs/screenshots/main-window.png)
+![Preview window](docs/screenshots/preview-window.png)
+
 ## Features
 
 - Grid, column, and list view modes for browsing folders
