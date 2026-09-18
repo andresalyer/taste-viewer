@@ -121,14 +121,14 @@
                                     Padding="{TemplateBinding Padding}" Margin="{StaticResource MarginMenuItem}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition x:Name="CheckCol" Width="16"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="Check" Text="✓" Grid.Column="0"
                                                Foreground="{StaticResource Accent}" FontSize="11"
                                                VerticalAlignment="Center"
                                                Visibility="Collapsed"/>
-                                    <ContentPresenter Grid.Column="1" Margin="6,0,0,0"
+                                    <ContentPresenter x:Name="Cp" Grid.Column="1" Margin="6,0,0,0"
                                                       ContentSource="Header"
                                                       VerticalAlignment="Center"/>
                                 </Grid>
@@ -154,6 +154,12 @@
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <!-- Non-checkable items (e.g. the "Sort" submenu header) don't reserve the
+                                 checkmark gutter, so they align flush with plain action items. -->
+                            <Trigger Property="IsCheckable" Value="False">
+                                <Setter TargetName="CheckCol" Property="Width" Value="0"/>
+                                <Setter TargetName="Cp" Property="Margin" Value="0"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -733,7 +739,6 @@
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="MoreMenu">
                                     <MenuItem Header="New Folder" Style="{StaticResource PlainMenuItem}" Command="{Binding NewFolderCommand}"/>
-                                    <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
                                     <MenuItem Header="Sort">
                                         <MenuItem x:Name="SortName"             Header="Name"              IsCheckable="True" Click="Sort_Click"/>
                                         <MenuItem x:Name="SortDate"             Header="Date Modified"     IsCheckable="True" Click="Sort_Click"/>
@@ -828,6 +833,14 @@
                         <!-- Edit mode -->
                         <Grid Margin="{StaticResource PaddingPathBar}"
                               Visibility="{Binding IsPathEditing, Converter={StaticResource BoolToVis}}">
+                            <!-- Shown only while the path bar is empty — invites a new user with no
+                                 familiar starting folder to paste one in. -->
+                            <TextBlock Text="Paste a folder path to get started"
+                                       Foreground="{StaticResource FgMuted}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Visibility="{Binding PathBarText, Converter={StaticResource NullToHide}}"/>
                             <TextBox x:Name="PathBar"
                                      Text="{Binding PathBarText, UpdateSourceTrigger=PropertyChanged}"
                                      Background="Transparent"
@@ -1024,6 +1037,7 @@
 
                 <ListBox x:Name="FileListBox"
                          ItemsSource="{Binding Files}"
+                         TextSearch.TextPath="FileName"
                          Background="Transparent"
                          BorderThickness="0"
                          SelectionMode="Extended"
@@ -1068,6 +1082,7 @@
             <ListView x:Name="FileListView"
                       Grid.Column="2"
                       ItemsSource="{Binding Files}"
+                      TextSearch.TextPath="FileName"
                       Background="{StaticResource BgBase}"
                       BorderThickness="0"
                       SelectionMode="Extended"
@@ -1088,8 +1103,16 @@
                       GridViewColumnHeader.Click="ListHeader_Click">
                 <ListView.Resources>
                     <conv:BoolToScaleConverter x:Key="BoolToScale"/>
-                    <!-- Dark filler header that WPF inserts to the right of all real columns -->
+                    <ContextMenu x:Key="ColMenu">
+                        <MenuItem Header="Date Modified" IsCheckable="True" IsChecked="{Binding ShowDateColumn}"    Click="ColToggle_Click"/>
+                        <MenuItem Header="Type"          IsCheckable="True" IsChecked="{Binding ShowTypeColumn}"    Click="ColToggle_Click"/>
+                        <MenuItem Header="Size"          IsCheckable="True" IsChecked="{Binding ShowSizeColumn}"    Click="ColToggle_Click"/>
+                        <MenuItem Header="Path"          IsCheckable="True" IsChecked="{Binding ShowPathColumn}"    Click="ColToggle_Click"/>
+                    </ContextMenu>
+                    <!-- Dark filler header that WPF inserts to the right of all real columns.
+                         Shares ColMenu so right-clicking the blank area behaves like any real header. -->
                     <Style TargetType="GridViewColumnHeader">
+                        <Setter Property="ContextMenu" Value="{StaticResource ColMenu}"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="GridViewColumnHeader">
@@ -1100,13 +1123,6 @@
                             </Setter.Value>
                         </Setter>
                     </Style>
-                    <ContextMenu x:Key="ColMenu">
-                        <MenuItem Header="Date Modified" IsCheckable="True" IsChecked="{Binding ShowDateColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
-                        <MenuItem Header="Type"          IsCheckable="True" IsChecked="{Binding ShowTypeColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
-                        <MenuItem Header="Size"          IsCheckable="True" IsChecked="{Binding ShowSizeColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
-                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
-                        <MenuItem Header="Path"          IsCheckable="True" IsChecked="{Binding ShowPathColumn}"    Click="ColToggle_Click" Style="{StaticResource PlainMenuItem}"/>
-                    </ContextMenu>
                 </ListView.Resources>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -1360,6 +1376,7 @@
                                     <Grid>
                                         <ListBox ItemsSource="{Binding Items}"
                                                  SelectedItem="{Binding SelectedItem}"
+                                                 TextSearch.TextPath="FileName"
                                                  Background="Transparent"
                                                  BorderThickness="0"
                                                  SelectionMode="Single"

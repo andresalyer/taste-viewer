@@ -25,7 +25,7 @@ public class NullToVisibilityConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        bool isNull = value is null;
+        bool isNull = value is null || (value is string s && s.Length == 0);
         return isNull
             ? (CollapseWhenNull ? Visibility.Collapsed : Visibility.Visible)
             : (CollapseWhenNull ? Visibility.Visible : Visibility.Collapsed);

@@ -91,12 +91,20 @@ public partial class MainWindow : Window
             ApplySidebarState(true);
         }
 
-        // Navigate to last folder or default
-        string start = System.IO.Directory.Exists(s.LastFolder)
-            ? s.LastFolder
-            : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        // Navigate to last folder or default. A brand-new user (no pinned folders yet)
+        // has no "last folder" either, so drop them somewhere familiar instead of My Pictures.
+        string? start = System.IO.Directory.Exists(s.LastFolder) ? s.LastFolder : null;
+        if (start == null)
+        {
+            start = Vm.PinnedFolders.Count == 0
+                ? @"C:\"
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        }
+
         if (System.IO.Directory.Exists(start))
             Vm.Navigate(start);
+        else
+            Vm.EnterPathEditMode(); // Nowhere familiar to land — invite them to paste a folder path.
     }
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -815,7 +823,10 @@ public partial class MainWindow : Window
 
         // Selecting a folder drills into it (next column); selecting a file just selects it.
         if (item.IsDirectory)
+        {
             Vm.ColumnFolderOpened(col, item);
+            _ = FocusColumnAfterOpen(col);
+        }
     }
 
     private void ColumnListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
