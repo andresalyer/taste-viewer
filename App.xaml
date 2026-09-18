@@ -10,7 +10,7 @@
             </ResourceDictionary.MergedDictionaries>
 
         <!-- ── Icons ─────────────────────────────────────────────────── -->
-        <sys:Double x:Key="IconStrokeThickness">1.5</sys:Double>
+        <sys:Double x:Key="IconStrokeThickness">1.25</sys:Double>
 
         <!-- ── Typography ───────────────────────────────────────────── -->
         <FontFamily x:Key="FontPrimary">/Taste;component/Fonts/#Inter</FontFamily>
