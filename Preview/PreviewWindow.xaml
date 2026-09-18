@@ -111,7 +111,7 @@
                         Click="Info_Click"
                         ToolTip="Keyboard shortcuts"
                         Margin="0,0,6,0">
-                    <Path Width="14" Height="14" Data="{StaticResource IconInfo}" Stroke="{StaticResource FgMuted}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                    <Path Width="14" Height="14" Data="{StaticResource IconInfo}" Stroke="{StaticResource FgMuted}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                 </Button>
 
                 <!-- Undo delete — shown temporarily after a delete -->
@@ -158,7 +158,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <TextBlock x:Name="ZoomLabel" Grid.Column="2" Text="100%"
@@ -180,7 +180,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -209,7 +209,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="14" Height="14" Data="{StaticResource IconScan}" Stroke="{StaticResource FgIcon}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="14" Height="14" Data="{StaticResource IconScan}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <Button Grid.Column="2" x:Name="FullscreenBtn" Click="Fullscreen_Click" ToolTip="Toggle fullscreen (F11)">
@@ -228,7 +228,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="14" Height="14" Data="{StaticResource IconExpand}" Stroke="{StaticResource FgIcon}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="14" Height="14" Data="{StaticResource IconExpand}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -261,7 +261,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="10" Height="10" Data="{StaticResource IconMinus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
                             <TextBlock x:Name="SpeedLabel" Grid.Column="2" Text="1×"
@@ -283,7 +283,7 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="10" Height="10" Data="{StaticResource IconPlus}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -313,7 +313,7 @@
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </ToggleButton.Template>
-                            <Path Width="14" Height="14" Data="{StaticResource IconSlidersHorizontal}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                            <Path Width="14" Height="14" Data="{StaticResource IconSlidersHorizontal}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </ToggleButton>
                     </Border>
                 </StackPanel>
@@ -418,8 +418,8 @@
                             </ControlTemplate>
                         </Button.Template>
                         <Grid>
-                            <Path x:Name="PlayIcon" Width="14" Height="14" Visibility="Collapsed" Data="{StaticResource IconPlay}" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
-                            <Path x:Name="PauseIcon" Width="14" Height="14" Data="{StaticResource IconPause}" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                            <Path x:Name="PlayIcon" Width="14" Height="14" Visibility="Collapsed" Data="{StaticResource IconPlay}" Stroke="White" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                            <Path x:Name="PauseIcon" Width="14" Height="14" Data="{StaticResource IconPause}" Stroke="White" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Grid>
                     </Button>
 
@@ -554,7 +554,7 @@
                                                           StrokeThickness="1.8" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                                 </Canvas>
                                                 <Path x:Name="MutedIcon" Width="24" Height="24" Visibility="Collapsed"
-                                                           Data="{StaticResource IconVolumeX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                                           Data="{StaticResource IconVolumeX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                                             </Canvas>
                                         </Viewbox>
                                     </Border>
@@ -670,7 +670,7 @@
                                         </Setter>
                                     </Style>
                                 </Button.Style>
-                                <Path Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                <Path Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
 

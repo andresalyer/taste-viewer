@@ -9,6 +9,9 @@
                 <ResourceDictionary Source="/Assets/Icons/IconGeometries.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+        <!-- ── Icons ─────────────────────────────────────────────────── -->
+        <sys:Double x:Key="IconStrokeThickness">2</sys:Double>
+
         <!-- ── Typography ───────────────────────────────────────────── -->
         <FontFamily x:Key="FontPrimary">/Taste;component/Fonts/#Inter</FontFamily>
 
