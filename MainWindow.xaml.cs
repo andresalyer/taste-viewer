@@ -900,6 +900,11 @@ public partial class MainWindow : Window
                         col.Items.Where(i => !i.IsDirectory).Select(i => i.FullPath).ToList());
                 e.Handled = true;
                 break;
+
+            case Key.Delete:
+                Vm.DeleteSelectedInColumn(col);
+                e.Handled = true;
+                break;
         }
     }
 

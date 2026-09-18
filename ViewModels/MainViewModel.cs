@@ -17,7 +17,8 @@ public enum ViewMode { Grid, List, Column }
 
 public class MainViewModel : ObservableObject, IDisposable
 {
-    private record DeletedItem(string OriginalPath, string RFile, string IFile, bool IsDirectory);
+    private record DeletedItem(string OriginalPath, string RFile, string IFile, bool IsDirectory,
+                                ObservableCollection<FileItemViewModel> TargetCollection);
 
     private readonly ThumbnailService _thumbnailService = new();
     private readonly Stack<string> _backStack = new();
@@ -777,13 +778,32 @@ public class MainViewModel : ObservableObject, IDisposable
         SelectedItems.Clear();
         UpdateStatus();
 
+        SendToRecycleBinAndTrackUndo(toDelete, Files);
+    }
+
+    // Column view has no notion of "the current folder" — each panel browses its own path —
+    // so deleting the selection there must remove it from that panel's own Items list.
+    public void DeleteSelectedInColumn(ColumnViewModel col)
+    {
+        if (col.SelectedItem == null) return;
+        var toDelete = new List<FileItemViewModel> { col.SelectedItem };
+
+        int firstIndex = col.Items.IndexOf(toDelete[0]);
+        col.Items.Remove(toDelete[0]);
+        col.SelectedItem = col.Items.Count > 0 ? col.Items[Math.Min(firstIndex, col.Items.Count - 1)] : null;
+
+        SendToRecycleBinAndTrackUndo(toDelete, col.Items);
+    }
+
+    private void SendToRecycleBinAndTrackUndo(List<FileItemViewModel> toDelete, ObservableCollection<FileItemViewModel> targetCollection)
+    {
         var group = new List<DeletedItem>();
         foreach (var item in toDelete)
         {
             FileOperationService.SendToRecycleBin(OwnerHwnd, item.FullPath);
             var entry = Taste.Interop.ShellInterop.FindRecycleBinEntry(item.FullPath);
             if (entry.HasValue)
-                group.Add(new DeletedItem(item.FullPath, entry.Value.RFile, entry.Value.IFile, item.IsDirectory));
+                group.Add(new DeletedItem(item.FullPath, entry.Value.RFile, entry.Value.IFile, item.IsDirectory, targetCollection));
         }
 
         if (group.Count > 0)
@@ -818,8 +838,15 @@ public class MainViewModel : ObservableObject, IDisposable
                 FileItemViewModel vm = item.IsDirectory
                     ? new FileItemViewModel(new DirectoryInfo(item.OriginalPath))
                     : new FileItemViewModel(new FileInfo(item.OriginalPath));
-                Files.Add(vm);
-                SelectedItem = vm;
+                if (item.TargetCollection == Files)
+                {
+                    Files.Add(vm);
+                    SelectedItem = vm;
+                }
+                else
+                {
+                    InsertColumnSorted(item.TargetCollection, vm);
+                }
                 if (!vm.IsDirectory) _thumbnailService.Enqueue(vm, ThumbnailSize, _loadCts.Token);
             }
             catch { }
