@@ -1054,7 +1054,6 @@ public partial class PreviewWindow : Window
     void CloseInfo_Click(object sender, RoutedEventArgs e)  => ShortcutsOverlay.Visibility = Visibility.Collapsed;
     void ZoomOut_Click(object sender, RoutedEventArgs e)    => ZoomBy(1.0 / 1.25, null);
     void ZoomIn_Click(object sender, RoutedEventArgs e)     => ZoomBy(1.25, null);
-    void Fit_Click(object sender, RoutedEventArgs e) => SetFitZoom();
     void PlayPause_Click(object sender, RoutedEventArgs e)  => TogglePlayPause();
     void SpeedDown_Click(object sender, RoutedEventArgs e)  => SetSpeed(_speedIndex - 1);
     void SpeedUp_Click(object sender, RoutedEventArgs e)    => SetSpeed(_speedIndex + 1);

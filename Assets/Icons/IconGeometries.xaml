@@ -16,7 +16,6 @@
     <StreamGeometry x:Key="IconMinus">M5 12h14</StreamGeometry>
     <StreamGeometry x:Key="IconPlus">M5 12h14 M12 5v14</StreamGeometry>
     <StreamGeometry x:Key="IconInfo">M2,12 A10,10 0 1,0 22,12 A10,10 0 1,0 2,12 Z M12 16v-4 M12 8h.01</StreamGeometry>
-    <StreamGeometry x:Key="IconMaximize2">M15 3h6v6 M21 3 14 10 M3 21 10 14 M9 21H3v-6</StreamGeometry>
     <StreamGeometry x:Key="IconPlay">M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z</StreamGeometry>
     <StreamGeometry x:Key="IconPause">M15,3 L18,3 A1,1 0 0 1 19,4 L19,20 A1,1 0 0 1 18,21 L15,21 A1,1 0 0 1 14,20 L14,4 A1,1 0 0 1 15,3 Z M6,3 L9,3 A1,1 0 0 1 10,4 L10,20 A1,1 0 0 1 9,21 L6,21 A1,1 0 0 1 5,20 L5,4 A1,1 0 0 1 6,3 Z</StreamGeometry>
     <StreamGeometry x:Key="IconVolumeX">M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z M16.5 14.5 21.5 9.5 M16.5 9.5 21.5 14.5</StreamGeometry>
