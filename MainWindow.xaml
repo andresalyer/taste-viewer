@@ -56,6 +56,34 @@
             </Setter>
         </Style>
 
+        <!-- Shared pill-segment button style (nav pill: back / forward / up) -->
+        <Style x:Key="PillSegmentButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource FgIcon}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent"
+                                CornerRadius="{TemplateBinding Tag}" Padding="10,1" Height="26">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Dark context menu -->
         <Style TargetType="ContextMenu">
             <Setter Property="Background" Value="{StaticResource BgPopup}"/>
@@ -567,72 +595,18 @@
                                 <ColumnDefinition Width="1"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Command="{Binding GoBackCommand}" ToolTip="Back (Alt+Left)"
-                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="13,0,0,13" Padding="10,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsEnabled" Value="False">
-                                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
+                            <Button Grid.Column="0" Style="{StaticResource PillSegmentButton}" Tag="{StaticResource PillRadiusLeft}"
+                                    Command="{Binding GoBackCommand}" ToolTip="Back (Alt+Left)">
                                 <Path Width="12" Height="12" Data="{StaticResource IconChevronLeft}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="1" Background="{StaticResource PillBorder}"/>
-                            <Button Grid.Column="2" Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)"
-                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0" Padding="10,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsEnabled" Value="False">
-                                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
+                            <Button Grid.Column="2" Style="{StaticResource PillSegmentButton}" Tag="0"
+                                    Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)">
                                 <Path Width="12" Height="12" Data="{StaticResource IconChevronRight}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                             <Border Grid.Column="3" Background="{StaticResource PillBorder}"/>
-                            <Button Grid.Column="4" Command="{Binding GoUpCommand}" ToolTip="Up (Alt+Up)"
-                                    Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="0,13,13,0" Padding="10,1" Height="26">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsEnabled" Value="False">
-                                                <Setter Property="Foreground" Value="{StaticResource FgDim}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
+                            <Button Grid.Column="4" Style="{StaticResource PillSegmentButton}" Tag="{StaticResource PillRadiusRight}"
+                                    Command="{Binding GoUpCommand}" ToolTip="Up (Alt+Up)">
                                 <Path Width="12" Height="12" Data="{StaticResource IconChevronUp}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                             </Button>
                         </Grid>
