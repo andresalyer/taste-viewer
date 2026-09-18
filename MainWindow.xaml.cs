@@ -328,6 +328,11 @@ public partial class MainWindow : Window
                 new MainWindow().Show();
             e.Handled = true;
         }
+        else if (e.Key == Key.F && (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0)
+        {
+            Vm.EnterSearchMode();
+            e.Handled = true;
+        }
     }
 
     // ── File list keyboard ─────────────────────────────────────────
@@ -370,6 +375,49 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 break;
         }
+    }
+
+    // ── Type-ahead (grid/list/column) ───────────────────────────────
+    // Shared buffer/timeout: only one list can have keyboard focus at a time.
+    private string   _typeAheadBuffer = "";
+    private DateTime _typeAheadLastKeyTime;
+    private static readonly TimeSpan TypeAheadTimeout = TimeSpan.FromSeconds(1);
+
+    private void FileList_PreviewTextInput(object sender, TextCompositionEventArgs e)     => HandleFileListTextInput(e);
+    private void FileListView_PreviewTextInput(object sender, TextCompositionEventArgs e) => HandleFileListTextInput(e);
+
+    private void HandleFileListTextInput(TextCompositionEventArgs e)
+    {
+        if (Vm.SelectedItem is { IsRenaming: true } || string.IsNullOrEmpty(e.Text)) return;
+
+        var match = TypeAheadMatch.Find(Vm.OrderedFiles, AdvanceTypeAheadBuffer(e.Text), Vm.SelectedItem);
+        if (match == null) return;
+
+        Vm.SelectedItem = match;
+        if (Vm.IsGridView) FileListBox.ScrollIntoView(match);
+        else if (Vm.IsListView) FileListView.ScrollIntoView(match);
+        e.Handled = true;
+    }
+
+    private void ColumnListBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        if (sender is not ListBox lb || lb.DataContext is not ColumnViewModel col) return;
+        if (col.SelectedItem is { IsRenaming: true } || string.IsNullOrEmpty(e.Text)) return;
+
+        var match = TypeAheadMatch.Find(col.Items, AdvanceTypeAheadBuffer(e.Text), col.SelectedItem);
+        if (match == null) return;
+
+        col.SelectedItem = match;
+        lb.ScrollIntoView(match);
+        e.Handled = true;
+    }
+
+    private string AdvanceTypeAheadBuffer(string text)
+    {
+        var now = DateTime.UtcNow;
+        _typeAheadBuffer = now - _typeAheadLastKeyTime > TypeAheadTimeout ? text : _typeAheadBuffer + text;
+        _typeAheadLastKeyTime = now;
+        return _typeAheadBuffer;
     }
 
     // ── File drag-out ─────────────────────────────────────────────
@@ -697,6 +745,46 @@ public partial class MainWindow : Window
     // ── Icon dropdown buttons ──────────────────────────────────────
 
     private void MoreBtn_Click(object sender, RoutedEventArgs e) => OpenContextMenu(MoreBtn);
+
+    private void SearchBtn_Click(object sender, RoutedEventArgs e)
+    {
+        if (Vm.IsSearching) Vm.ExitSearchMode();
+        else Vm.EnterSearchMode();
+    }
+
+    private void SearchClose_Click(object sender, RoutedEventArgs e) => Vm.ExitSearchMode();
+
+    private void SearchBar_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is TextBox tb && (bool)e.NewValue)
+            tb.Dispatcher.BeginInvoke(() => { tb.Focus(); tb.SelectAll(); },
+                System.Windows.Threading.DispatcherPriority.Input);
+    }
+
+    private void SearchBar_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            Vm.ExitSearchMode();
+            FileListBox.Focus();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter && SearchResultsList.Items.Count > 0)
+        {
+            SearchResultsList.SelectedIndex = 0;
+            SearchResultsList.Focus();
+            e.Handled = true;
+        }
+    }
+
+    private void SearchResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (SearchResultsList.SelectedItem is not FileItemViewModel item) return;
+        string? parent = Path.GetDirectoryName(item.FullPath);
+        if (parent == null) return;
+        Vm.ExitSearchMode();
+        Vm.Navigate(parent);
+    }
 
     private void ViewGrid_Click(object sender, RoutedEventArgs e)
     {

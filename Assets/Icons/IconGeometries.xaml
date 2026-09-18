@@ -22,5 +22,6 @@
     <StreamGeometry x:Key="IconCloud">M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z</StreamGeometry>
     <StreamGeometry x:Key="IconVideo">m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5 M4,6 L14,6 A2,2 0 0 1 16,8 L16,16 A2,2 0 0 1 14,18 L4,18 A2,2 0 0 1 2,16 L2,8 A2,2 0 0 1 4,6 Z</StreamGeometry>
     <StreamGeometry x:Key="IconPanelLeft">M5,3 L19,3 A2,2 0 0 1 21,5 L21,19 A2,2 0 0 1 19,21 L5,21 A2,2 0 0 1 3,19 L3,5 A2,2 0 0 1 5,3 Z M9 3v18</StreamGeometry>
+    <StreamGeometry x:Key="IconSearch">M3,11 A8,8 0 1,0 19,11 A8,8 0 1,0 3,11 Z M21 21 16.7 16.7</StreamGeometry>
 
 </ResourceDictionary>

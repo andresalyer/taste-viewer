@@ -31,6 +31,8 @@ public class MainViewModel : ObservableObject, IDisposable
     private System.Threading.Timer? _watcherDebounce;
     private readonly List<List<DeletedItem>> _undoGroups = new();
     private System.Threading.Timer? _undoTimer;
+    private CancellationTokenSource _searchCts = new();
+    private System.Threading.Timer? _searchDebounce;
 
     // Last known viewport — set by the view on scroll/resize, used here for thumbnail requests
     private double _vpScrollOffset;
@@ -48,6 +50,10 @@ public class MainViewModel : ObservableObject, IDisposable
 
     public IEnumerable<string> OrderedFilePaths =>
         _filesView.Cast<FileItemViewModel>().Select(f => f.FullPath);
+
+    // Current on-screen order (respects the active sort mode) — used for type-ahead.
+    public IReadOnlyList<FileItemViewModel> OrderedFiles =>
+        _filesView.Cast<FileItemViewModel>().ToList();
 
     public static readonly int[] SnapPoints = [100, 160, 220, 280, 340, 400, 460, 520];
     public const int SizeMin  = 100;
@@ -310,7 +316,33 @@ public class MainViewModel : ObservableObject, IDisposable
     public bool IsPathEditing
     {
         get => _isPathEditing;
-        set => SetField(ref _isPathEditing, value);
+        set { if (SetField(ref _isPathEditing, value)) OnPropertyChanged(nameof(IsBreadcrumbMode)); }
+    }
+
+    // ── Search (recursive, filename-only, current folder down) ──────
+    public ObservableCollection<FileItemViewModel> SearchResults { get; } = new();
+
+    private bool _isSearching;
+    public bool IsSearching
+    {
+        get => _isSearching;
+        set { if (SetField(ref _isSearching, value)) OnPropertyChanged(nameof(IsBreadcrumbMode)); }
+    }
+
+    public bool IsBreadcrumbMode => !IsPathEditing && !IsSearching;
+
+    private string _searchQuery = string.Empty;
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set { if (SetField(ref _searchQuery, value)) ScheduleSearch(); }
+    }
+
+    private string _searchStatusText = string.Empty;
+    public string SearchStatusText
+    {
+        get => _searchStatusText;
+        private set => SetField(ref _searchStatusText, value);
     }
 
     private FileItemViewModel? _selectedItem;
@@ -476,6 +508,7 @@ public class MainViewModel : ObservableObject, IDisposable
 
     public void EnterPathEditMode()
     {
+        IsSearching   = false;
         PathBarText   = _currentPath;
         IsPathEditing = true;
     }
@@ -484,6 +517,98 @@ public class MainViewModel : ObservableObject, IDisposable
     {
         IsPathEditing = false;
         PathBarText   = _currentPath;
+    }
+
+    public void EnterSearchMode()
+    {
+        IsPathEditing = false;
+        IsSearching   = true;
+    }
+
+    public void ExitSearchMode()
+    {
+        IsSearching  = false;
+        SearchQuery  = string.Empty;
+        SearchResults.Clear();
+        _searchDebounce?.Dispose();
+        _searchDebounce = null;
+        _searchCts.Cancel();
+    }
+
+    private void ScheduleSearch()
+    {
+        _searchCts.Cancel();
+        _searchDebounce?.Dispose();
+
+        if (string.IsNullOrWhiteSpace(_searchQuery)) { SearchResults.Clear(); SearchStatusText = ""; return; }
+
+        string query = _searchQuery;
+        _searchDebounce = new System.Threading.Timer(_ => _ = RunSearchAsync(query),
+            null, AppConstants.SearchDebounceMs, Timeout.Infinite);
+    }
+
+    // Runs the recursive walk on a background thread, flushing matches to SearchResults in
+    // small batches (by count or by time, whichever comes first) so a fast local disk can't
+    // flood the UI thread with per-item updates, while a slow one still feels live.
+    private async Task RunSearchAsync(string query)
+    {
+        _searchCts.Cancel();
+        _searchCts.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+        string root = _currentPath;
+        var dispatcher = Application.Current.Dispatcher;
+
+        dispatcher.Invoke(() => { SearchResults.Clear(); SearchStatusText = "Searching…"; });
+
+        int total = 0;
+        bool capped = false;
+
+        void Flush(List<FileItemViewModel> batch)
+        {
+            if (batch.Count == 0 || token.IsCancellationRequested) return;
+            var items = batch.ToList();
+            batch.Clear();
+            dispatcher.Invoke(() =>
+            {
+                foreach (var item in items)
+                {
+                    SearchResults.Add(item);
+                    if (!item.IsDirectory) _thumbnailService.Enqueue(item, 24, token);
+                }
+            });
+        }
+
+        try
+        {
+            await Task.Run(() =>
+            {
+                var batch = new List<FileItemViewModel>(AppConstants.SearchBatchSize);
+                var lastFlush = DateTime.UtcNow;
+
+                foreach (var item in FolderSearchService.Search(root, query, token))
+                {
+                    token.ThrowIfCancellationRequested();
+                    batch.Add(item);
+                    total++;
+                    if (total >= AppConstants.SearchResultCap) { capped = true; break; }
+
+                    if (batch.Count >= AppConstants.SearchBatchSize ||
+                        (DateTime.UtcNow - lastFlush).TotalMilliseconds >= AppConstants.SearchBatchMs)
+                    {
+                        Flush(batch);
+                        lastFlush = DateTime.UtcNow;
+                    }
+                }
+                Flush(batch);
+            }, token);
+
+            if (token.IsCancellationRequested) return;
+            dispatcher.Invoke(() => SearchStatusText = capped
+                ? $"More than {AppConstants.SearchResultCap:N0} results — refine your search"
+                : total == 0 ? "No results" : $"{total:N0} result{(total == 1 ? "" : "s")}");
+        }
+        catch (OperationCanceledException) { }
     }
 
     private void RebuildPathSegments(string path)
@@ -981,6 +1106,9 @@ public class MainViewModel : ObservableObject, IDisposable
         _loadCts.Dispose();
         _watcherDebounce?.Dispose();
         _undoTimer?.Dispose();
+        _searchDebounce?.Dispose();
+        _searchCts.Cancel();
+        _searchCts.Dispose();
         _watcher?.Dispose();
         _thumbnailService.Dispose();
         DisposeEnumerators();
