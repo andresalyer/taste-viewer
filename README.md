@@ -19,6 +19,8 @@ Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installa
 - Custom folder icons and thumbnails
 - Keyboard and screen reader accessible
 - In-app auto-update
+- For video preview, zoom and video speed
+- Quick delete, and undo delete for culling
 
 ## Requirements
 
