@@ -628,6 +628,31 @@
                 <!-- Right-side pills -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
 
+                    <!-- Search pill -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center">
+                        <Button x:Name="SearchBtn" Click="SearchBtn_Click" ToolTip="Search this folder (Ctrl+F)"
+                                AutomationProperties.Name="Search this folder"
+                                Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource PillRadius}" Padding="10,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Width="14" Height="14" Data="{StaticResource IconSearch}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                        </Button>
+                    </Border>
+
                     <!-- View pill: grid+chevron | columns | list -->
                     <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
@@ -777,6 +802,7 @@
                         BorderBrush="{StaticResource BorderDefault}"
                         BorderThickness="1"
                         CornerRadius="13"
+                        Height="28"
                         Margin="{StaticResource NavHGap}"
                         PreviewMouseLeftButtonDown="PathBar_ContainerPreviewMouseDown">
                     <Grid>
@@ -786,7 +812,7 @@
                                       VerticalScrollBarVisibility="Disabled"
                                       Padding="{StaticResource PaddingPathBar}"
                                       VerticalAlignment="Center"
-                                      Visibility="{Binding IsPathEditing, Converter={StaticResource InvBoolToVis}}">
+                                      Visibility="{Binding IsBreadcrumbMode, Converter={StaticResource BoolToVis}}">
                             <ItemsControl ItemsSource="{Binding PathSegments}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -870,6 +896,61 @@
                                     Command="{Binding ClearPathBarCommand}"
                                     ToolTip="Clear"
                                     AutomationProperties.Name="Clear"
+                                    Focusable="False"
+                                    Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="4">
+                                            <Path x:Name="Icon" Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{StaticResource FgIconSubtle}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                <Setter TargetName="Icon" Property="Stroke" Value="{StaticResource FgInput}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+
+                        <!-- Search mode -->
+                        <Grid Margin="{StaticResource PaddingPathBar}"
+                              Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding CurrentFolderName, StringFormat=Search {0}}"
+                                       Foreground="{StaticResource FgMuted}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Visibility="{Binding SearchQuery, Converter={StaticResource NullToHide}}"/>
+                            <TextBox x:Name="SearchBar"
+                                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     Foreground="{StaticResource FgPrimary}"
+                                     CaretBrush="{StaticResource FgPrimary}"
+                                     BorderThickness="0"
+                                     FontSize="14"
+                                     VerticalAlignment="Center"
+                                     KeyDown="SearchBar_KeyDown"
+                                     IsVisibleChanged="SearchBar_IsVisibleChanged"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding SearchStatusText}"
+                                       Foreground="{StaticResource FgSecondary}"
+                                       FontSize="12"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"/>
+                            <!-- Close button -->
+                            <Button Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Click="SearchClose_Click"
+                                    ToolTip="Close search"
+                                    AutomationProperties.Name="Close search"
                                     Focusable="False"
                                     Cursor="Hand">
                                 <Button.Template>
@@ -1037,7 +1118,6 @@
 
                 <ListBox x:Name="FileListBox"
                          ItemsSource="{Binding Files}"
-                         TextSearch.TextPath="FileName"
                          Background="Transparent"
                          BorderThickness="0"
                          SelectionMode="Extended"
@@ -1056,7 +1136,8 @@
                          PreviewMouseWheel="FileListBox_PreviewMouseWheel"
                          SelectionChanged="FileListBox_SelectionChanged"
                          MouseDoubleClick="FileList_MouseDoubleClick"
-                         PreviewKeyDown="FileList_PreviewKeyDown">
+                         PreviewKeyDown="FileList_PreviewKeyDown"
+                         PreviewTextInput="FileList_PreviewTextInput">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ctrl:JustifiedWrapPanel Margin="{StaticResource MarginGridPanel}"/>
@@ -1082,7 +1163,6 @@
             <ListView x:Name="FileListView"
                       Grid.Column="2"
                       ItemsSource="{Binding Files}"
-                      TextSearch.TextPath="FileName"
                       Background="{StaticResource BgBase}"
                       BorderThickness="0"
                       SelectionMode="Extended"
@@ -1093,6 +1173,7 @@
                       SelectionChanged="FileListView_SelectionChanged"
                       MouseDoubleClick="FileListView_MouseDoubleClick"
                       PreviewKeyDown="FileListView_PreviewKeyDown"
+                      PreviewTextInput="FileListView_PreviewTextInput"
                       PreviewMouseRightButtonDown="FileListView_PreviewMouseRightButtonDown"
                       ContextMenuOpening="FileListView_ContextMenuOpening"
                       PreviewMouseLeftButtonDown="FileListBox_PreviewMouseLeftButtonDown"
@@ -1376,7 +1457,6 @@
                                     <Grid>
                                         <ListBox ItemsSource="{Binding Items}"
                                                  SelectedItem="{Binding SelectedItem}"
-                                                 TextSearch.TextPath="FileName"
                                                  Background="Transparent"
                                                  BorderThickness="0"
                                                  SelectionMode="Single"
@@ -1388,6 +1468,7 @@
                                                  PreviewMouseLeftButtonDown="ColumnListBox_PreviewMouseLeftButtonDown"
                                                  PreviewMouseMove="ColumnListBox_PreviewMouseMove"
                                                  PreviewKeyDown="ColumnListBox_PreviewKeyDown"
+                                                 PreviewTextInput="ColumnListBox_PreviewTextInput"
                                                  DragOver="ColumnListBox_DragOver"
                                                  DragLeave="ColumnListBox_DragLeave"
                                                  Drop="ColumnListBox_Drop"
@@ -1472,6 +1553,26 @@
                     </ItemsControl>
                 </ScrollViewer>
             </Grid>
+
+            <!-- ═══ SEARCH RESULTS ═══ -->
+            <ListBox Grid.Column="2"
+                     x:Name="SearchResultsList"
+                     ItemsSource="{Binding SearchResults}"
+                     ItemTemplate="{StaticResource ThumbnailTemplate}"
+                     Background="{StaticResource BgBase}"
+                     BorderThickness="0"
+                     SelectionMode="Extended"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}"
+                     MouseDoubleClick="SearchResultsList_MouseDoubleClick">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ctrl:JustifiedWrapPanel Margin="{StaticResource MarginGridPanel}"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
 
             <!-- Loading overlay -->
             <Border Grid.Column="2"

@@ -9,6 +9,12 @@ internal static class AppConstants
     public const int ScrollbarHideDelayMs  = 1200;
     public const int WatcherDebounceMs     = 2000;
     public const int UndoExpiryMs          = 12000;
+    public const int SearchDebounceMs      = 300;
+
+    // Search
+    public const int SearchResultCap       = 2000;
+    public const int SearchBatchSize       = 100;
+    public const int SearchBatchMs         = 100;
 
     // Window defaults (also declared in AppSettings for serialisation)
     public const double DefaultWindowWidth  = 1200;
