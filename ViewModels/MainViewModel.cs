@@ -541,6 +541,10 @@ public class MainViewModel : ObservableObject, IDisposable
         _loadCts.Cancel();
         _loadCts.Dispose();
         _loadCts = new CancellationTokenSource();
+        // The cancelled requests above included the initial visible-thumbnail batch, at the
+        // current scroll offset — force this re-request through even though the offset hasn't
+        // moved, or the scroll-debounce below would otherwise skip it entirely.
+        _lastThumbScrollOffset = -1;
         RequestVisibleThumbnails(_loadCts.Token);
 
         // Skip the watcher while there's more to page in — not worth the overhead, and a live
