@@ -91,12 +91,20 @@ public partial class MainWindow : Window
             ApplySidebarState(true);
         }
 
-        // Navigate to last folder or default
-        string start = System.IO.Directory.Exists(s.LastFolder)
-            ? s.LastFolder
-            : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        // Navigate to last folder or default. A brand-new user (no pinned folders yet)
+        // has no "last folder" either, so drop them somewhere familiar instead of My Pictures.
+        string? start = System.IO.Directory.Exists(s.LastFolder) ? s.LastFolder : null;
+        if (start == null)
+        {
+            start = Vm.PinnedFolders.Count == 0
+                ? @"C:\"
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        }
+
         if (System.IO.Directory.Exists(start))
             Vm.Navigate(start);
+        else
+            Vm.EnterPathEditMode(); // Nowhere familiar to land — invite them to paste a folder path.
     }
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -795,17 +803,6 @@ public partial class MainWindow : Window
 
     // ── Column view ────────────────────────────────────────────────
 
-    // Column view enforces a single active selection across all panels: whichever column
-    // last received focus is "active", and every other column's selection is cleared.
-    private void ColumnListBox_GotFocus(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ListBox lb || lb.DataContext is not ColumnViewModel active) return;
-
-        foreach (var other in Vm.Columns)
-            if (other != active && other.SelectedItem != null)
-                other.SelectedItem = null;
-    }
-
     private void ColumnPanel_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (sender is not ListBox lb || lb.DataContext is not ColumnViewModel col) return;
@@ -813,9 +810,33 @@ public partial class MainWindow : Window
 
         if (_suppressColumnAutoOpen) { _suppressColumnAutoOpen = false; return; }
 
-        // Selecting a folder drills into it (next column); selecting a file just selects it.
+        // Selecting a folder exposes its contents in the next column, but doesn't select
+        // anything there yet — the source column stays the active (primary) selection until
+        // the user actually picks something in the new column. Explicit drill-in (Right
+        // arrow, below) is the only thing that auto-selects into the next column.
         if (item.IsDirectory)
+        {
             Vm.ColumnFolderOpened(col, item);
+            _ = ScrollNextColumnIntoView(col);
+        }
+    }
+
+    // Brings the newly-appended next column into view without selecting anything in it or
+    // moving keyboard focus away from the column the user is currently in.
+    private async Task ScrollNextColumnIntoView(ColumnViewModel source)
+    {
+        await Dispatcher.Yield(DispatcherPriority.Loaded);
+
+        int idx = Vm.Columns.IndexOf(source);
+        if (idx < 0 || idx + 1 >= Vm.Columns.Count) return;
+        var target = Vm.Columns[idx + 1];
+
+        for (int i = 0; i < 200 && target.IsLoading; i++)
+            await Task.Delay(10);
+        if (idx + 1 >= Vm.Columns.Count || Vm.Columns[idx + 1] != target) return;
+
+        if (ColumnsItemsControl.ItemContainerGenerator.ContainerFromItem(target) is FrameworkElement container)
+            container.BringIntoView();
     }
 
     private void ColumnListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)

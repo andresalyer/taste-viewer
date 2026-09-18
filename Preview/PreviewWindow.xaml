@@ -320,7 +320,9 @@
                     Visibility="Collapsed"
                     Opacity="0"
                     IsHitTestVisible="True"
-                    Focusable="False">
+                    Focusable="False"
+                    MouseEnter="ScrubberHoverZone_MouseEnter"
+                    MouseLeave="ScrubberHoverZone_MouseLeave">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
