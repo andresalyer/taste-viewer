@@ -149,7 +149,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                 <Setter TargetName="Bd" Property="CornerRadius" Value="4"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
@@ -302,7 +302,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                 <Setter TargetName="Bd" Property="CornerRadius" Value="4"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -1086,7 +1086,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -1352,7 +1352,7 @@
                                                                 </Border>
                                                                 <ControlTemplate.Triggers>
                                                                     <Trigger Property="IsSelected" Value="True">
-                                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayMenuHover}"/>
+                                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                                                     </Trigger>
                                                                 </ControlTemplate.Triggers>
                                                             </ControlTemplate>

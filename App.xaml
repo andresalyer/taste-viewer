@@ -77,9 +77,8 @@
         <SolidColorBrush x:Key="FgPlaceholder" Color="#363636"/>  <!-- unloaded tile text -->
         <SolidColorBrush x:Key="FgIconLight"   Color="#DDDDDD"/>  <!-- video badge icon -->
         <!-- Interactive overlays (semi-transparent) -->
-        <SolidColorBrush x:Key="OverlayHover"     Color="#28FFFFFF"/>
-        <SolidColorBrush x:Key="OverlayPressed"   Color="#18FFFFFF"/>
-        <SolidColorBrush x:Key="OverlayMenuHover" Color="#30FFFFFF"/>
+        <SolidColorBrush x:Key="OverlayHover"     Color="#1AFFFFFF"/>  <!-- 10% white; also used where OverlayMenuHover used to be -->
+        <SolidColorBrush x:Key="OverlayPressed"   Color="#0DFFFFFF"/>  <!-- 5% white -->
         <SolidColorBrush x:Key="OverlayTileHover" Color="#12FFFFFF"/>
         <SolidColorBrush x:Key="SelectionBorder"  Color="#CCF0F0F0"/>
         <!-- Pill capsule -->
