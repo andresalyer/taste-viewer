@@ -44,6 +44,33 @@ public partial class App : Application
         _tray.ContextMenuStrip = menu;
 
         _tray.DoubleClick += (_, _) => RestoreMainWindow();
+
+        _ = CheckForUpdatesAsync();
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3)); // let startup/UI settle before hitting the network
+
+        var update = await UpdateService.CheckForUpdateAsync();
+        if (update == null) return;
+
+        var choice = MessageBox.Show(
+            $"Taste Viewer {update.Version} is available. Update now?",
+            "Update Available",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Information);
+        if (choice != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var installerPath = await UpdateService.DownloadInstallerAsync(update.DownloadUrl);
+            UpdateService.RunInstallerAndExit(installerPath);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Update failed: {ex.Message}", "Update Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)
