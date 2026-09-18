@@ -234,7 +234,7 @@ public class MainViewModel : ObservableObject, IDisposable
     {
         var token = _loadCts.Token;
         foreach (FileItemViewModel item in _filesView)
-            if (!item.IsDirectory && !item.IsCloudPlaceholder && item.Thumbnail == null)
+            if (!item.IsDirectory && item.Thumbnail == null && !item.ThumbnailUnavailable)
                 _thumbnailService.Enqueue(item, 24, token);
     }
 
@@ -245,7 +245,7 @@ public class MainViewModel : ObservableObject, IDisposable
         await col.LoadAsync();
         var token = _loadCts.Token;
         foreach (var item in col.Items)
-            if (!item.IsDirectory && !item.IsCloudPlaceholder)
+            if (!item.IsDirectory)
                 _thumbnailService.Enqueue(item, 24, token);
     }
 
@@ -742,7 +742,7 @@ public class MainViewModel : ObservableObject, IDisposable
         {
             if (i < firstKeep || i > lastKeep)
                 item.ClearThumbnail();
-            else if (i >= firstLoad && i <= lastLoad && !item.IsDirectory && item.Thumbnail == null)
+            else if (i >= firstLoad && i <= lastLoad && !item.IsDirectory && item.Thumbnail == null && !item.ThumbnailUnavailable)
                 _thumbnailService.Enqueue(item, ThumbnailSize, token);
             i++;
         }

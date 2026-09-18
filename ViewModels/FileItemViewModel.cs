@@ -52,6 +52,10 @@ public class FileItemViewModel : ObservableObject
         private set => SetField(ref _thumbnail, value);
     }
 
+    // Set when a load attempt genuinely produced no thumbnail (distinct from ClearThumbnail's
+    // scroll-eviction, which should still be retried when the item scrolls back into view).
+    public bool ThumbnailUnavailable { get; private set; }
+
     private bool _isRenaming;
     public bool IsRenaming
     {
@@ -144,7 +148,18 @@ public class FileItemViewModel : ObservableObject
         RenameText  = newName;
     }
 
-    public void SetThumbnail(BitmapSource? thumbnail) => Thumbnail = thumbnail;
+    public void SetThumbnail(BitmapSource? thumbnail)
+    {
+        Thumbnail = thumbnail;
+        ThumbnailUnavailable = false;
+    }
+
+    public void MarkThumbnailUnavailable()
+    {
+        Thumbnail = null;
+        ThumbnailUnavailable = true;
+    }
+
     public void ClearThumbnail() => Thumbnail = null;
 
     public static bool IsSupportedExtension(string ext) =>
