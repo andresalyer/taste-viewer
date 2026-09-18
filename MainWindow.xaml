@@ -628,6 +628,31 @@
                 <!-- Right-side pills -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
 
+                    <!-- Search pill -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center">
+                        <Button x:Name="SearchBtn" Click="SearchBtn_Click" ToolTip="Search this folder (Ctrl+F)"
+                                AutomationProperties.Name="Search this folder"
+                                Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource PillRadius}" Padding="10,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Width="14" Height="14" Data="{StaticResource IconSearch}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                        </Button>
+                    </Border>
+
                     <!-- View pill: grid+chevron | columns | list -->
                     <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
@@ -770,31 +795,6 @@
                             <Path Width="14" Height="14" Data="{StaticResource IconMoreHorizontal}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
                     </Border>
-
-                    <!-- Search pill -->
-                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
-                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <Button x:Name="SearchBtn" Click="SearchBtn_Click" ToolTip="Search this folder (Ctrl+F)"
-                                AutomationProperties.Name="Search this folder"
-                                Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource PillRadius}" Padding="10,1" Height="26">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <Path Width="14" Height="14" Data="{StaticResource IconSearch}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
-                        </Button>
-                    </Border>
                 </StackPanel>
 
                 <!-- Path bar -->
@@ -919,8 +919,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Search this folder…"
+                            <TextBlock Text="{Binding CurrentFolderName, StringFormat=Search {0}}"
                                        Foreground="{StaticResource FgMuted}"
                                        FontSize="14"
                                        VerticalAlignment="Center"
@@ -934,18 +935,17 @@
                                      BorderThickness="0"
                                      FontSize="14"
                                      VerticalAlignment="Center"
-                                     Padding="0,0,20,0"
                                      KeyDown="SearchBar_KeyDown"
                                      IsVisibleChanged="SearchBar_IsVisibleChanged"/>
                             <TextBlock Grid.Column="1"
                                        Text="{Binding SearchStatusText}"
                                        Foreground="{StaticResource FgSecondary}"
                                        FontSize="12"
-                                       Margin="8,0,28,0"
+                                       Margin="8,0,0,0"
                                        VerticalAlignment="Center"
                                        IsHitTestVisible="False"/>
                             <!-- Close button -->
-                            <Button HorizontalAlignment="Right"
+                            <Button Grid.Column="2"
                                     VerticalAlignment="Center"
                                     Click="SearchClose_Click"
                                     ToolTip="Close search"

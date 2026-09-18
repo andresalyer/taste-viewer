@@ -284,6 +284,9 @@ public class MainViewModel : ObservableObject, IDisposable
     private string _currentPath = string.Empty;
     public string CurrentPath => _currentPath;
 
+    // Same name shown as the last breadcrumb segment — used for the search placeholder.
+    public string CurrentFolderName => PathSegments.Count > 0 ? PathSegments[^1].Name : "";
+
     private string _pathBarText = string.Empty;
     public string PathBarText
     {
@@ -658,6 +661,7 @@ public class MainViewModel : ObservableObject, IDisposable
         PathBarText  = path;
         RebuildPathSegments(path);
         OnPropertyChanged(nameof(CurrentPath));
+        OnPropertyChanged(nameof(CurrentFolderName));
         OnPropertyChanged(nameof(CanGoUp));
         OnPropertyChanged(nameof(CanPinCurrentFolder));
 
