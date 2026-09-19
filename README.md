@@ -1,4 +1,4 @@
-# Taste
+# Taste Viewer
 
 ![Taste logo](docs/screenshots/logo-v2.png)
 
