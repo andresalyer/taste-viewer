@@ -4,6 +4,11 @@
 
 A fast, media-focused replacement for Windows Explorer — built for browsing and reviewing images, GIFs, and videos, with a built-in floating preview window. It has two components. 1) An main explorer window 2) A preview window triggered by the space bar. This also works with regular windows explorer. 
 
+## Demo
+
+![Demo part 1](docs/screenshots/demo-part1.gif)
+![Demo part 2](docs/screenshots/demo-part2.gif)
+
 ## Download
 
 **[⬇ Download the latest installer](https://github.com/andresalyer/taste-viewer/releases/latest)**
