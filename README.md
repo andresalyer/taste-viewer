@@ -14,6 +14,7 @@ Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installa
 
 <p align="center">
   <img src="docs/screenshots/demo-part1.gif" width="640">
+  
   <img src="docs/screenshots/demo-part2.gif" width="640">
 </p>
 
