@@ -7,14 +7,13 @@ A fast, media-focused replacement for Windows Explorer — built for browsing an
 ## Download
 
 **[⬇ Download the latest installer](https://github.com/andresalyer/taste-viewer/releases/latest)**
+Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installation required — the app is self-contained.
+
 
 ## Demo
 
 ![Demo part 1](docs/screenshots/demo-part1.gif)
 ![Demo part 2](docs/screenshots/demo-part2.gif)
-
-
-Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installation required — the app is self-contained.
 
 ![Main window](docs/screenshots/main-window.png)
 ![Preview window](docs/screenshots/preview-window.png)
