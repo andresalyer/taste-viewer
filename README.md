@@ -15,9 +15,6 @@ Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installa
 ![Demo part 1](docs/screenshots/demo-part1.gif)
 ![Demo part 2](docs/screenshots/demo-part2.gif)
 
-![Main window](docs/screenshots/main-window.png)
-![Preview window](docs/screenshots/preview-window.png)
-
 ## Features
 
 - Grid, column, and list view modes for browsing folders
@@ -28,6 +25,9 @@ Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installa
 - In-app auto-update
 - For video preview, zoom and video speed
 - Quick delete, and undo delete for culling
+
+![Main window](docs/screenshots/main-window.png)
+![Preview window](docs/screenshots/preview-window.png)
 
 ## Requirements
 
