@@ -23,7 +23,7 @@ Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installa
 ## Features
 
 - Grid, column, and list view modes for browsing folders
-- Built-in floating preview window for images, GIFs (animated), and videos
+- Built-in floating preview window for images, GIFs, and videos
 - Fast, cached thumbnail generation with adjustable sizes
 - Custom folder icons and thumbnails
 - Keyboard and screen reader accessible
