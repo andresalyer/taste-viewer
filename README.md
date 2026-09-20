@@ -25,11 +25,10 @@ Grab `Taste-Setup-x.x.x.exe` from the Releases page and run it. No .NET installa
 - Grid, column, and list view modes for browsing folders
 - Built-in floating preview window for images, GIFs, and videos
 - Fast, cached thumbnail generation with adjustable sizes
-- Custom folder icons and thumbnails
-- Keyboard and screen reader accessible
-- In-app auto-update
 - For video preview, zoom and video speed
 - Quick delete, and undo delete for culling
+- Keyboard and screen reader accessible
+- In-app auto-update
 
 ![Main window](docs/screenshots/main-window.png)
 ![Preview window](docs/screenshots/preview-window.png)
