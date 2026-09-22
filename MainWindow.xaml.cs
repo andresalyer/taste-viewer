@@ -58,6 +58,7 @@ public partial class MainWindow : Window
         ShellInterop.SetDarkTitleBar(hwnd);
 
         Vm.PropertyChanged += OnVmPropertyChanged;
+        ((App)Application.Current).Preview.CurrentFileChanged += Preview_CurrentFileChanged;
 
         var s = SettingsService.Load();
 
@@ -374,6 +375,41 @@ public partial class MainWindow : Window
                         Vm.OrderedFilePaths.ToList());
                 e.Handled = true;
                 break;
+        }
+    }
+
+    // Keeps the main window's selection highlight in sync as the preview window
+    // navigates (arrow keys, delete/undo). No-ops if the file isn't in the
+    // currently visible collection, e.g. when the preview was opened from Explorer.
+    private void Preview_CurrentFileChanged(string path)
+    {
+        if (Vm.IsColumnView)
+        {
+            foreach (var col in Vm.Columns)
+            {
+                var match = col.Items.FirstOrDefault(i =>
+                    !i.IsDirectory && string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase));
+                if (match == null) continue;
+                col.SelectedItem = match;
+                return;
+            }
+        }
+        else
+        {
+            var match = Vm.Files.FirstOrDefault(i =>
+                !i.IsDirectory && string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase));
+            if (match == null) return;
+
+            if (Vm.IsListView)
+            {
+                FileListView.SelectedItem = match;
+                FileListView.ScrollIntoView(match);
+            }
+            else
+            {
+                FileListBox.SelectedItem = match;
+                FileListBox.ScrollIntoView(match);
+            }
         }
     }
 

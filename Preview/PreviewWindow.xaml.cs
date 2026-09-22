@@ -98,6 +98,10 @@ public partial class PreviewWindow : Window
         ApplyDarkTitleBar();
     }
 
+    // Raised whenever the displayed file changes (navigation, open, delete/undo)
+    // so hosts can keep their own selection highlight in sync.
+    public event Action<string>? CurrentFileChanged;
+
     // ── Open / Close ─────────────────────────────────────────────────────────
 
     public void OpenOrClose(string selectedPath, string folderPath, List<string> allFiles)
@@ -125,7 +129,9 @@ public partial class PreviewWindow : Window
     void LoadCurrent()
     {
         if (_files.Count == 0) return;
-        LoadFile(_files[_index]);
+        var path = _files[_index];
+        CurrentFileChanged?.Invoke(path);
+        LoadFile(path);
     }
 
     void LoadFile(string path)
