@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Threading.Tasks;
 using Taste.Interop;
 using Taste.Services;
 using Taste.Shared;
@@ -113,6 +114,16 @@ public partial class MainWindow : Window
         {
             DoUpdateViewport();
             if (Vm.IsListView) Vm.RequestListViewThumbnails();
+
+            if (Vm.PendingScrollRestore is double savedOffset)
+            {
+                string targetPath = Vm.CurrentPath;
+                Vm.ClearPendingScrollRestore();
+                // Defer past the rest of this load's synchronous tail (it still swaps _loadCts
+                // after this event fires) so our own paging calls below don't race its cancellation.
+                Dispatcher.BeginInvoke(() => _ = RestoreScrollAsync(targetPath, savedOffset),
+                    DispatcherPriority.Background);
+            }
         }
 
         if (e.PropertyName == nameof(MainViewModel.CurrentPath))
@@ -189,6 +200,25 @@ public partial class MainWindow : Window
                 MainScrollViewer.ViewportHeight,
                 contentWidth);
         });
+    }
+
+    // Large folders page in ~500 items at a time, so a saved offset from a previous visit may
+    // point past what's currently loaded. Keep paging in more until the extent covers it (or the
+    // folder runs out) before scrolling, so we don't scroll into empty space below the last item.
+    private async Task RestoreScrollAsync(string path, double offset)
+    {
+        int safety = 0;
+        while (Vm.CurrentPath == path
+               && Vm.HasMoreItems
+               && MainScrollViewer.ExtentHeight < offset + MainScrollViewer.ViewportHeight
+               && safety++ < 50)
+        {
+            await Vm.LoadNextPageAsync();
+            MainScrollViewer.UpdateLayout();
+        }
+
+        if (Vm.CurrentPath == path)
+            MainScrollViewer.ScrollToVerticalOffset(offset);
     }
 
     // ── Scrollbar auto-hide ────────────────────────────────────────

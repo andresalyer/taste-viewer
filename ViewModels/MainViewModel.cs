@@ -40,6 +40,11 @@ public class MainViewModel : ObservableObject, IDisposable
     private double _vpContentWidth;
     private double _lastThumbScrollOffset = -1;
 
+    // Grid-view scroll offset per folder path, so returning via Back/Forward lands where the
+    // user left off instead of at the top. Only meaningful for the grid view's pixel-based
+    // scrolling, so it's only populated/consumed while IsGridView.
+    private readonly Dictionary<string, double> _scrollPositions = new();
+
     // Folder enumeration is paged in from here as the user scrolls, rather than capped outright.
     private IEnumerator<DirectoryInfo>? _dirEnumerator;
     private IEnumerator<FileInfo>? _fileEnumerator;
@@ -406,6 +411,11 @@ public class MainViewModel : ObservableObject, IDisposable
     public bool IsListView   => _viewMode == ViewMode.List;
     public bool IsColumnView => _viewMode == ViewMode.Column;
 
+    /// Grid-view scroll offset to restore for the folder just loaded, if one was saved when the
+    /// user last left it. The view consumes this (via ClearPendingScrollRestore) once it acts on it.
+    public double? PendingScrollRestore { get; private set; }
+    public void ClearPendingScrollRestore() => PendingScrollRestore = null;
+
     public bool CanPinCurrentFolder =>
         !string.IsNullOrEmpty(_currentPath) &&
         !PinnedFolders.Any(p => string.Equals(p.FullPath, _currentPath, StringComparison.OrdinalIgnoreCase));
@@ -648,6 +658,10 @@ public class MainViewModel : ObservableObject, IDisposable
         _loadCts.Dispose();
         _loadCts = new CancellationTokenSource();
         var token = _loadCts.Token;
+
+        if (_viewMode == ViewMode.Grid && !string.IsNullOrEmpty(_currentPath))
+            _scrollPositions[_currentPath] = _vpScrollOffset;
+
         _vpScrollOffset = 0;
         _lastThumbScrollOffset = -1; // force thumb request after load
 
@@ -658,6 +672,9 @@ public class MainViewModel : ObservableObject, IDisposable
         DisposeEnumerators();
 
         _currentPath = path;
+        PendingScrollRestore = _viewMode == ViewMode.Grid && _scrollPositions.TryGetValue(path, out var savedOffset)
+            ? savedOffset
+            : null;
         PathBarText  = path;
         RebuildPathSegments(path);
         OnPropertyChanged(nameof(CurrentPath));
