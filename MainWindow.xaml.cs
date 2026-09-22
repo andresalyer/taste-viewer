@@ -400,7 +400,7 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 break;
             case Key.Space:
-                if (Vm.SelectedItem is { IsDirectory: false })
+                if (Vm.SelectedItem is not null)
                     ((App)Application.Current).Preview.OpenOrClose(
                         Vm.SelectedItem.FullPath,
                         Vm.CurrentPath,
@@ -1074,11 +1074,11 @@ public partial class MainWindow : Window
                 break;
 
             case Key.Space:
-                if (col.SelectedItem is { IsDirectory: false } spaceItem)
+                if (col.SelectedItem is { } spaceItem)
                     ((App)Application.Current).Preview.OpenOrClose(
                         spaceItem.FullPath,
                         col.Path,
-                        col.Items.Where(i => !i.IsDirectory).Select(i => i.FullPath).ToList());
+                        col.Items.Select(i => i.FullPath).ToList());
                 e.Handled = true;
                 break;
 
