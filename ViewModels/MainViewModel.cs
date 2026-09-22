@@ -26,8 +26,8 @@ public class MainViewModel : ObservableObject, IDisposable
     private readonly ListCollectionView _filesView;
     private FileSystemWatcher? _watcher;
     private CancellationTokenSource _loadCts = new();
-    private SortMode _sortMode = SortMode.DateModified;
-    private SortDirection _sortDirection = SortDirection.Descending;
+    private SortMode _sortMode = SortMode.Name;
+    private SortDirection _sortDirection = SortDirection.Ascending;
     private System.Threading.Timer? _watcherDebounce;
     private readonly List<List<DeletedItem>> _undoGroups = new();
     private System.Threading.Timer? _undoTimer;
@@ -71,7 +71,7 @@ public class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private string _selectedSort = "Date Modified";
+    private string _selectedSort = "Name";
     public string SelectedSort
     {
         get => _selectedSort;
@@ -91,7 +91,7 @@ public class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private string _selectedSortDirection = "Descending";
+    private string _selectedSortDirection = "Ascending";
     public string SelectedSortDirection
     {
         get => _selectedSortDirection;

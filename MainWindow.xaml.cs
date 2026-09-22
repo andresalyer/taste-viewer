@@ -36,8 +36,6 @@ public partial class MainWindow : Window
         SettingsService.Save(new AppSettings
         {
             ThumbnailSize = Vm.ThumbnailSize,
-            SortMode      = Vm.SelectedSort,
-            SortDirection = Vm.SelectedSortDirection,
             LastFolder    = Vm.CurrentPath,
             WindowWidth   = Width,
             WindowHeight  = Height,
@@ -67,19 +65,17 @@ public partial class MainWindow : Window
         Height = s.WindowHeight;
 
         // Restore VM state
-        Vm.ThumbnailSize         = s.ThumbnailSize;
-        Vm.SelectedSort          = s.SortMode;
-        Vm.SelectedSortDirection = s.SortDirection;
+        Vm.ThumbnailSize = s.ThumbnailSize;
 
         // Restore pinned folders
         foreach (var path in s.PinnedFolders)
             Vm.PinnedFolders.Add(new PinnedFolderViewModel(path));
 
-        // Sync sort menu checkmarks to restored state
+        // Sync sort menu checkmarks to default sort (Name, Ascending)
         foreach (MenuItem item in new[] { SortName, SortDate, SortType, SortSize })
-            item.IsChecked = item.Header.ToString() == s.SortMode;
+            item.IsChecked = item.Header.ToString() == Vm.SelectedSort;
         foreach (MenuItem item in new[] { SortAscending, SortDescending })
-            item.IsChecked = item.Header.ToString() == s.SortDirection;
+            item.IsChecked = item.Header.ToString() == Vm.SelectedSortDirection;
 
         ExplorerSpacebarItem.IsChecked = s.ExplorerSpacebarEnabled;
 
