@@ -1621,10 +1621,13 @@
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="8,2">
-                                <TextBlock Text="Feedback"
-                                           Foreground="{StaticResource FgSecondary}"
-                                           FontSize="11"
-                                           VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Width="12" Height="12" Data="{StaticResource IconMessageSquareMore}" Stroke="{StaticResource FgSecondary}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Feedback"
+                                               Foreground="{StaticResource FgSecondary}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
