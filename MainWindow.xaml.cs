@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -348,7 +349,12 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.N && (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0)
+        if (e.Key == Key.Escape && FeedbackOverlay.Visibility == Visibility.Visible)
+        {
+            FeedbackOverlay.Visibility = Visibility.Collapsed;
+            e.Handled = true;
+        }
+        else if (e.Key == Key.N && (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0)
         {
             var count = Application.Current.Windows.OfType<MainWindow>().Count();
             if (count < 4)
@@ -1252,5 +1258,54 @@ public partial class MainWindow : Window
         if (paths.Length == 0) return;
         try { Clipboard.SetText(string.Join(Environment.NewLine, paths)); }
         catch { }
+    }
+
+    private const string FeedbackRepoUrl = "https://github.com/andresalyer/taste-viewer";
+    private const int FeedbackMaxLength = 1000;
+
+    private void Feedback_Click(object sender, RoutedEventArgs e)
+    {
+        FeedbackTypeBug.IsChecked = false;
+        FeedbackTypeFeature.IsChecked = false;
+        FeedbackTypeSuggestion.IsChecked = false;
+        FeedbackText.Text = string.Empty;
+        FeedbackText.IsEnabled = false;
+        FeedbackSubmitBtn.IsEnabled = false;
+        FeedbackCharCount.Text = $"0 / {FeedbackMaxLength}";
+        FeedbackOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void CloseFeedback_Click(object sender, RoutedEventArgs e) =>
+        FeedbackOverlay.Visibility = Visibility.Collapsed;
+
+    private void FeedbackType_Checked(object sender, RoutedEventArgs e)
+    {
+        FeedbackText.IsEnabled = true;
+        FeedbackText.Focus();
+        UpdateFeedbackSubmitState();
+    }
+
+    private void FeedbackText_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        FeedbackCharCount.Text = $"{FeedbackText.Text.Length} / {FeedbackMaxLength}";
+        UpdateFeedbackSubmitState();
+    }
+
+    private void UpdateFeedbackSubmitState() =>
+        FeedbackSubmitBtn.IsEnabled = FeedbackText.IsEnabled && !string.IsNullOrWhiteSpace(FeedbackText.Text);
+
+    private void FeedbackSubmit_Click(object sender, RoutedEventArgs e)
+    {
+        var template = FeedbackTypeBug.IsChecked == true ? "bug_report.yml"
+                      : FeedbackTypeFeature.IsChecked == true ? "feature_request.yml"
+                      : "suggestion.yml";
+
+        var description = Uri.EscapeDataString(FeedbackText.Text.Trim());
+        var url = $"{FeedbackRepoUrl}/issues/new?template={template}&description={description}";
+
+        try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
+        catch { }
+
+        FeedbackOverlay.Visibility = Visibility.Collapsed;
     }
 }

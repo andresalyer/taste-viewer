@@ -1613,6 +1613,33 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                <Button DockPanel.Dock="Right"
+                        Click="Feedback_Click"
+                        AutomationProperties.Name="Send feedback"
+                        Cursor="Hand"
+                        Focusable="False">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="8,2">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Width="12" Height="12" Data="{StaticResource IconMessageSquareMore}" Stroke="{StaticResource FgSecondary}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Feedback"
+                                               Foreground="{StaticResource FgSecondary}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 <TextBlock Text="{Binding StatusText}"
                            Foreground="{StaticResource FgSecondary}"
                            FontSize="12"
@@ -1673,5 +1700,193 @@
                 </StackPanel>
             </Border>
         </Popup>
+
+        <!-- Feedback overlay -->
+        <Grid x:Name="FeedbackOverlay" Visibility="Collapsed" Focusable="False" Grid.RowSpan="3">
+            <Rectangle Fill="#B2000000"/>
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{StaticResource BgPopup}"
+                    BorderBrush="{StaticResource BorderStrong}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="24,20"
+                    Width="420">
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <Style x:Key="FeedbackRadio" TargetType="RadioButton">
+                            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Margin" Value="0,0,0,8"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="RadioButton">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Grid Width="16" Height="16" VerticalAlignment="Center">
+                                                <Ellipse Stroke="{StaticResource BorderStrong}" StrokeThickness="1.25" Width="16" Height="16"/>
+                                                <Ellipse x:Name="Dot" Fill="{StaticResource Accent}" Width="8" Height="8" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                            </Grid>
+                                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Dot" Property="Visibility" Value="Visible"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </StackPanel.Resources>
+
+                    <Grid Margin="0,0,0,16">
+                        <TextBlock Text="Send Feedback"
+                                   Foreground="{StaticResource FgInput}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <Button HorizontalAlignment="Right"
+                                Click="CloseFeedback_Click"
+                                Focusable="False"
+                                Cursor="Hand"
+                                ToolTip="Close"
+                                AutomationProperties.Name="Close">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#888888"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Setter Property="Focusable" Value="False"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                                        CornerRadius="3" Padding="6,2">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#383838"/>
+                                                        <Setter Property="Foreground" Value="#CCCCCC"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                            <Path Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Text="Please submit one bug, feature request, or suggestion at a time — it keeps things easier to track."
+                               Foreground="{StaticResource FgSecondary}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,14"/>
+
+                    <RadioButton x:Name="FeedbackTypeBug"        Content="Bug"               GroupName="FeedbackType" Style="{StaticResource FeedbackRadio}" Checked="FeedbackType_Checked"/>
+                    <RadioButton x:Name="FeedbackTypeFeature"    Content="Feature request"   GroupName="FeedbackType" Style="{StaticResource FeedbackRadio}" Checked="FeedbackType_Checked"/>
+                    <RadioButton x:Name="FeedbackTypeSuggestion" Content="Suggest a change"  GroupName="FeedbackType" Style="{StaticResource FeedbackRadio}" Checked="FeedbackType_Checked"/>
+
+                    <Border Background="{StaticResource BgDeep}"
+                            BorderBrush="{StaticResource BorderDefault}"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Margin="0,4,0,4">
+                        <TextBox x:Name="FeedbackText"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource FgInput}"
+                                 CaretBrush="{StaticResource FgInput}"
+                                 BorderThickness="0"
+                                 Padding="8,6"
+                                 FontSize="12"
+                                 MinHeight="90"
+                                 MaxHeight="180"
+                                 MaxLength="1000"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 IsEnabled="False"
+                                 TextChanged="FeedbackText_TextChanged"
+                                 AutomationProperties.Name="Feedback details"/>
+                    </Border>
+
+                    <TextBlock x:Name="FeedbackCharCount"
+                               Text="0 / 1000"
+                               Foreground="{StaticResource FgMuted}"
+                               FontSize="10"
+                               HorizontalAlignment="Right"
+                               Margin="0,0,0,16"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Cancel"
+                                Click="CloseFeedback_Click"
+                                Margin="0,0,8,0"
+                                Padding="12,6"
+                                Cursor="Hand"
+                                Focusable="False">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{StaticResource FgSecondary}"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="FeedbackSubmitBtn"
+                                Content="Continue on GitHub"
+                                Click="FeedbackSubmit_Click"
+                                IsEnabled="False"
+                                Padding="12,6"
+                                Cursor="Hand"
+                                Focusable="False">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource Accent}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="Bd" Property="Opacity" Value="0.35"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

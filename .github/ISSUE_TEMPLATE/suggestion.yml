@@ -1,0 +1,12 @@
+name: Suggest a Change
+description: Suggest a change to something that already exists
+title: "[Suggestion]: "
+labels: ["suggestion"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What should change, and why?
+    validations:
+      required: true
