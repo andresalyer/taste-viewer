@@ -3,8 +3,6 @@ namespace Taste.Services;
 public class AppSettings
 {
     public int    ThumbnailSize   { get; set; } = 220;
-    public string SortMode        { get; set; } = "Date Modified";
-    public string SortDirection   { get; set; } = "Descending";
     public string LastFolder      { get; set; } = "";
     public double WindowWidth     { get; set; } = 1200;
     public double WindowHeight    { get; set; } = 800;
