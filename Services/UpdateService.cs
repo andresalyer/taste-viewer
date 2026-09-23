@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace Taste.Services;
 
-public sealed record UpdateInfo(string Version, string DownloadUrl, string Sha256);
+public sealed record UpdateInfo(string Version, string DownloadUrl, string Sha256, string ReleaseNotes);
 
 public static class UpdateService
 {
@@ -46,7 +46,7 @@ public static class UpdateService
             var sha256 = (await client.GetStringAsync(checksumAsset.BrowserDownloadUrl)).Trim();
             if (!Regex.IsMatch(sha256, "^[0-9a-fA-F]{64}$")) return null;
 
-            return new UpdateInfo(release.TagName.TrimStart('v', 'V'), asset.BrowserDownloadUrl, sha256);
+            return new UpdateInfo(release.TagName.TrimStart('v', 'V'), asset.BrowserDownloadUrl, sha256, release.Body ?? "");
         }
         catch
         {
@@ -128,6 +128,9 @@ public static class UpdateService
     {
         [JsonPropertyName("tag_name")]
         public string? TagName { get; set; }
+
+        [JsonPropertyName("body")]
+        public string? Body { get; set; }
 
         [JsonPropertyName("assets")]
         public List<GitHubAsset>? Assets { get; set; }

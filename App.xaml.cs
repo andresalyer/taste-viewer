@@ -55,12 +55,9 @@ public partial class App : Application
         var update = await UpdateService.CheckForUpdateAsync();
         if (update == null) return;
 
-        var choice = MessageBox.Show(
-            $"Taste Viewer {update.Version} is available. Update now?",
-            "Update Available",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Information);
-        if (choice != MessageBoxResult.Yes) return;
+        var dialog = new UpdateDialog(update) { Owner = MainWindow };
+        dialog.ShowDialog();
+        if (!dialog.UpdateAccepted) return;
 
         try
         {
