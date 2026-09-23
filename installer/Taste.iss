@@ -42,10 +42,10 @@ Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopi
 
 [Tasks]
 Name: desktopicon; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"
-Name: startup;     Description: "Start {#AppName} with Windows (runs in system tray)"; GroupDescription: "Startup:"; Flags: unchecked
+Name: startup;     Description: "Start {#AppName} with Windows (starts in the system tray)"; GroupDescription: "Startup:"; Flags: unchecked
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#AppName}"; ValueData: """{app}\{#AppExe}"""; Flags: uninsdeletevalue; Tasks: startup
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#AppName}"; ValueData: """{app}\{#AppExe}"" --background"; Flags: uninsdeletevalue; Tasks: startup
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall

@@ -13,9 +13,46 @@ public partial class App : Application
     internal ExplorerWatcher Watcher { get; private set; } = null!;
     private  WinForms.NotifyIcon _tray = null!;
 
+    // One Taste per user session: a second launch (pinned taskbar icon, Start menu)
+    // signals the running copy to show its window and exits.
+    private const string InstanceMutexName = @"Local\Taste.SingleInstance";
+    private const string ShowWindowEventName = @"Local\Taste.ShowWindow";
+    private Mutex? _instanceMutex;
+    private EventWaitHandle? _showWindowEvent;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool AllowSetForegroundWindow(int dwProcessId);
+    private const int ASFW_ANY = -1;
+
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e); // creates MainWindow via StartupUri
+        bool background = e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase);
+
+        _instanceMutex = new Mutex(true, InstanceMutexName, out bool isFirstInstance);
+        _showWindowEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ShowWindowEventName);
+        if (!isFirstInstance)
+        {
+            // This process was launched by the user, so it holds foreground rights;
+            // pass them on so the running copy's window can come to the front.
+            if (!background)
+            {
+                AllowSetForegroundWindow(ASFW_ANY);
+                _showWindowEvent.Set();
+            }
+            Shutdown();
+            return;
+        }
+
+        ThreadPool.RegisterWaitForSingleObject(_showWindowEvent,
+            (_, _) => Dispatcher.BeginInvoke((Action)RestoreMainWindow), null, Timeout.Infinite, executeOnlyOnce: false);
+
+        base.OnStartup(e);
+
+        // --background (used by the "Start with Windows" entry) starts in the tray only;
+        // the window is built now but not shown until the user opens it from the tray.
+        MainWindow = new MainWindow();
+        if (!background)
+            MainWindow.Show();
 
         var settings = SettingsService.Load();
 
@@ -40,6 +77,9 @@ public partial class App : Application
         };
 
         var menu = new WinForms.ContextMenuStrip();
+        var open = menu.Items.Add("Open Taste", null, (_, _) => RestoreMainWindow());
+        open.Font = new System.Drawing.Font(open.Font, System.Drawing.FontStyle.Bold);
+        menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Quit", null, (_, _) => { Watcher.Stop(); Shutdown(); });
         _tray.ContextMenuStrip = menu;
 
@@ -55,7 +95,12 @@ public partial class App : Application
         var update = await UpdateService.CheckForUpdateAsync();
         if (update == null) return;
 
-        var dialog = new UpdateDialog(update) { Owner = MainWindow };
+        // Owner must be a window that has been shown — not the case when started in the tray.
+        var dialog = new UpdateDialog(update);
+        if (MainWindow is { IsVisible: true })
+            dialog.Owner = MainWindow;
+        else
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         dialog.ShowDialog();
         if (!dialog.UpdateAccepted) return;
 
@@ -74,12 +119,16 @@ public partial class App : Application
     {
         _tray?.Dispose();
         Watcher?.Stop();
+        _showWindowEvent?.Dispose();
+        _instanceMutex?.Dispose(); // closing the handle frees the name for the next launch
         base.OnExit(e);
     }
 
     private void RestoreMainWindow()
     {
-        if (MainWindow == null) return;
+        // Closed windows drop out of Windows, so if every browser window was closed
+        // (the app keeps running in the tray), open a fresh one.
+        MainWindow = Windows.OfType<MainWindow>().FirstOrDefault() ?? new MainWindow();
         MainWindow.Show();
         if (MainWindow.WindowState == WindowState.Minimized)
             MainWindow.WindowState = WindowState.Normal;
