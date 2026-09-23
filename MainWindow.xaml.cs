@@ -48,6 +48,10 @@ public partial class MainWindow : Window
             PinnedFolders          = Vm.PinnedFolders.Select(p => p.FullPath).ToList(),
             ExplorerSpacebarEnabled = ((App)Application.Current).Watcher.ExplorerSpacebarEnabled,
         });
+        // Preview is an app-lifetime singleton — without this, every closed secondary
+        // window (Ctrl+N) stays rooted by its CurrentFileChanged subscription forever,
+        // leaking the window's whole visual tree and every thumbnail it ever loaded.
+        ((App)Application.Current).Preview.CurrentFileChanged -= Preview_CurrentFileChanged;
         Vm.Dispose();
     }
 

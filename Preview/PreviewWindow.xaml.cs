@@ -48,7 +48,9 @@ public partial class PreviewWindow : Window
     private DispatcherTimer?         _spinnerTimer = null;
     private int                      _spinnerFrame = 0;
     private string                   _baseTitle    = "";
-    private CancellationTokenSource? _heicCts      = null;
+    // Backs both LoadHeicAsync and LoadImageAsync — only one file is ever decoding at a
+    // time, so a single token covers cancelling a stale decode when navigation moves on.
+    private CancellationTokenSource? _decodeCts    = null;
 
     // Delete / undo
     private record struct DeletedEntry(string Path, string RFile, string IFile, int Index);
@@ -136,8 +138,8 @@ public partial class PreviewWindow : Window
 
     void LoadFile(string path)
     {
-        _heicCts?.Cancel();
-        _heicCts = null;
+        _decodeCts?.Cancel();
+        _decodeCts = null;
         StopSpinner();
 
         EmptyState.Visibility  = Visibility.Collapsed;
@@ -205,37 +207,13 @@ public partial class PreviewWindow : Window
                     }));
                 }
                 StartSpinner(Title);
-                _heicCts = new CancellationTokenSource();
-                LoadHeicAsync(path, _heicCts.Token);
+                _decodeCts = new CancellationTokenSource();
+                LoadHeicAsync(path, _decodeCts.Token);
             }
             else
             {
-                try
-                {
-                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    var bmp = new BitmapImage();
-                    bmp.BeginInit();
-                    bmp.StreamSource = stream;
-                    bmp.CacheOption  = BitmapCacheOption.OnLoad;
-                    bmp.EndInit();
-                    bmp.Freeze();
-                    ImageView.Source = bmp;
-
-                    _naturalW = bmp.PixelWidth;
-                    _naturalH = bmp.PixelHeight;
-                    ContentGrid.Width  = _naturalW;
-                    ContentGrid.Height = _naturalH;
-                    Dispatcher.BeginInvoke(DispatcherPriority.Background, (Action)(() =>
-                    {
-                        SetFitZoom();
-                        LoadingDim.Visibility = Visibility.Collapsed;
-                    }));
-                }
-                catch
-                {
-                    ImageView.Source      = null;
-                    LoadingDim.Visibility = Visibility.Collapsed;
-                }
+                _decodeCts = new CancellationTokenSource();
+                LoadImageAsync(path, _decodeCts.Token);
             }
         }
         else
@@ -625,6 +603,53 @@ public partial class PreviewWindow : Window
         _gifSave   = null;
     }
 
+    // ── Standard image loading ───────────────────────────────────────────────
+    // Decoding (especially a large JPEG/PNG/TIFF/RAW) off the UI thread keeps
+    // navigation responsive — this used to run inline in LoadFile and could
+    // visibly stall the window on a large file.
+
+    async void LoadImageAsync(string path, CancellationToken ct)
+    {
+        try
+        {
+            var bmp = await Task.Run(() =>
+            {
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var b = new BitmapImage();
+                b.BeginInit();
+                b.StreamSource = stream;
+                b.CacheOption  = BitmapCacheOption.OnLoad;
+                b.EndInit();
+                b.Freeze();
+                return b;
+            }, ct);
+
+            if (ct.IsCancellationRequested) return;
+
+            ImageView.Source   = bmp;
+            _naturalW = bmp.PixelWidth;
+            _naturalH = bmp.PixelHeight;
+            ContentGrid.Width  = _naturalW;
+            ContentGrid.Height = _naturalH;
+            // Deferred to Background priority so layout picks up the ContentGrid size
+            // change above before SetFitZoom reads the scroll viewport's dimensions.
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, (Action)(() =>
+            {
+                SetFitZoom();
+                LoadingDim.Visibility = Visibility.Collapsed;
+            }));
+        }
+        catch (OperationCanceledException) { }
+        catch
+        {
+            if (!ct.IsCancellationRequested)
+            {
+                ImageView.Source      = null;
+                LoadingDim.Visibility = Visibility.Collapsed;
+            }
+        }
+    }
+
     // ── HEIC two-stage loading ────────────────────────────────────────────────
 
     async void LoadHeicAsync(string path, CancellationToken ct)
@@ -897,8 +922,8 @@ public partial class PreviewWindow : Window
     {
         if (_files.Count == 0 || _index < 0) return;
 
-        _heicCts?.Cancel();
-        _heicCts = null;
+        _decodeCts?.Cancel();
+        _decodeCts = null;
         StopSpinner();
 
         var path        = _files[_index];
@@ -1116,8 +1141,8 @@ public partial class PreviewWindow : Window
             WindowState   = _savedWindowState;
             _isFullscreen = false;
         }
-        _heicCts?.Cancel();
-        _heicCts = null;
+        _decodeCts?.Cancel();
+        _decodeCts = null;
         StopSpinner();
         StopGifAnimation();
         VideoView.Stop();

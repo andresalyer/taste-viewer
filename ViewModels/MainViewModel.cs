@@ -622,6 +622,13 @@ public class MainViewModel : ObservableObject, IDisposable
                 : total == 0 ? "No results" : $"{total:N0} result{(total == 1 ? "" : "s")}");
         }
         catch (OperationCanceledException) { }
+        catch
+        {
+            // An unexpected failure mid-walk shouldn't leave the status text stuck on
+            // "Searching…" forever with no feedback.
+            if (!token.IsCancellationRequested)
+                dispatcher.Invoke(() => SearchStatusText = "Search failed");
+        }
     }
 
     private void RebuildPathSegments(string path)
