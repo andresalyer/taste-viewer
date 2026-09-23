@@ -860,6 +860,8 @@ public partial class MainWindow : Window
 
     private void MoreBtn_Click(object sender, RoutedEventArgs e) => OpenContextMenu(MoreBtn);
 
+    private void SortBtn_Click(object sender, RoutedEventArgs e) => OpenContextMenu(SortBtn);
+
     private void SearchBtn_Click(object sender, RoutedEventArgs e)
     {
         if (Vm.IsSearching) Vm.ExitSearchMode();

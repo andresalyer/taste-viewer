@@ -755,6 +755,42 @@
                         </Grid>
                     </Border>
 
+                    <!-- Sort pill -->
+                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <Button x:Name="SortBtn" Click="SortBtn_Click" ToolTip="Sort"
+                                AutomationProperties.Name="Sort"
+                                Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="SortMenu">
+                                    <MenuItem x:Name="SortName"       Header="Name"          IsCheckable="True" Click="Sort_Click"/>
+                                    <MenuItem x:Name="SortDate"       Header="Date Modified" IsCheckable="True" Click="Sort_Click"/>
+                                    <MenuItem x:Name="SortType"       Header="Type"          IsCheckable="True" Click="Sort_Click"/>
+                                    <MenuItem x:Name="SortSize"       Header="Size"          IsCheckable="True" Click="Sort_Click"/>
+                                    <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
+                                    <MenuItem x:Name="SortAscending"  Header="Ascending"     IsCheckable="True" Click="SortDirection_Click"/>
+                                    <MenuItem x:Name="SortDescending" Header="Descending"    IsCheckable="True" Click="SortDirection_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource PillRadius}" Padding="10,1" Height="26">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayPressed}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Width="14" Height="14" Data="{StaticResource IconArrowDownWideNarrow}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                        </Button>
+                    </Border>
+
                     <!-- More pill -->
                     <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
                             CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center" Margin="8,0,0,0">
@@ -764,17 +800,7 @@
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="MoreMenu">
                                     <MenuItem Header="New Folder" Style="{StaticResource PlainMenuItem}" Command="{Binding NewFolderCommand}"/>
-                                    <MenuItem Header="Sort">
-                                        <MenuItem x:Name="SortName"             Header="Name"              IsCheckable="True" Click="Sort_Click"/>
-                                        <MenuItem x:Name="SortDate"             Header="Date Modified"     IsCheckable="True" Click="Sort_Click"/>
-                                        <MenuItem x:Name="SortType"             Header="Type"              IsCheckable="True" Click="Sort_Click"/>
-                                        <MenuItem x:Name="SortSize"             Header="Size"              IsCheckable="True" Click="Sort_Click"/>
-                                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
-                                        <MenuItem x:Name="SortAscending"        Header="Ascending"         IsCheckable="True" Click="SortDirection_Click"/>
-                                        <MenuItem x:Name="SortDescending"       Header="Descending"        IsCheckable="True" Click="SortDirection_Click"/>
-                                        <Separator Background="{StaticResource BorderStrong}" Margin="{StaticResource MarginSeparator}"/>
-                                        <MenuItem x:Name="ExplorerSpacebarItem" Header="Explorer spacebar" IsCheckable="True" Click="ExplorerSpacebar_Click" IsChecked="True"/>
-                                    </MenuItem>
+                                    <MenuItem x:Name="ExplorerSpacebarItem" Header="Explorer spacebar" IsCheckable="True" Click="ExplorerSpacebar_Click" IsChecked="True"/>
                                 </ContextMenu>
                             </Button.ContextMenu>
                             <Button.Template>
