@@ -177,7 +177,10 @@ public partial class MainWindow : Window
     {
         if (Controls.ListBoxDragDropBehavior.IsDragging) return;
         if (sender is FrameworkElement fe && fe.DataContext is PinnedFolderViewModel pf)
+        {
+            if (Vm.IsSearching) Vm.ExitSearchMode();
             Vm.Navigate(pf.FullPath);
+        }
     }
 
     private void PinnedList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -264,7 +267,13 @@ public partial class MainWindow : Window
 
     private void PathBar_ContainerPreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (Vm.IsPathEditing) return;
+        // Breadcrumb, path-edit, and search mode all share this container. Without this,
+        // clicking into the search box (not a Button, so the walk-up below doesn't exempt
+        // it) fell through to EnterPathEditMode() and silently swapped out of search —
+        // the edit-mode Grid then occupies the same spot search's UI just vacated, so the
+        // "search" the user thinks they're still looking at (including its close button)
+        // is actually path-edit mode's own text field and clear button.
+        if (Vm.IsPathEditing || Vm.IsSearching) return;
 
         // If the click landed on a breadcrumb button let it navigate normally
         var src = e.OriginalSource as DependencyObject;
@@ -889,6 +898,13 @@ public partial class MainWindow : Window
             SearchResultsList.Focus();
             e.Handled = true;
         }
+        else if (e.Key == Key.Enter)
+        {
+            // No results yet — most likely the debounce just hasn't fired. Run now instead
+            // of making Enter feel like it did nothing.
+            Vm.RunSearchNow();
+            e.Handled = true;
+        }
     }
 
     private void SearchResultsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1308,6 +1324,7 @@ public partial class MainWindow : Window
 
     private const string FeedbackRepoUrl = "https://github.com/andresalyer/taste-viewer";
     private const int FeedbackMaxLength = 1000;
+    private const int FeedbackMinLength = 10;
 
     private void Feedback_Click(object sender, RoutedEventArgs e)
     {
@@ -1338,7 +1355,7 @@ public partial class MainWindow : Window
     }
 
     private void UpdateFeedbackSubmitState() =>
-        FeedbackSubmitBtn.IsEnabled = FeedbackText.IsEnabled && !string.IsNullOrWhiteSpace(FeedbackText.Text);
+        FeedbackSubmitBtn.IsEnabled = FeedbackText.IsEnabled && FeedbackText.Text.Trim().Length >= FeedbackMinLength;
 
     private void FeedbackSubmit_Click(object sender, RoutedEventArgs e)
     {

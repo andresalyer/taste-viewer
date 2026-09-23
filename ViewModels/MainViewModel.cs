@@ -334,16 +334,31 @@ public class MainViewModel : ObservableObject, IDisposable
     public bool IsSearching
     {
         get => _isSearching;
-        set { if (SetField(ref _isSearching, value)) OnPropertyChanged(nameof(IsBreadcrumbMode)); }
+        set
+        {
+            if (!SetField(ref _isSearching, value)) return;
+            OnPropertyChanged(nameof(IsBreadcrumbMode));
+            OnPropertyChanged(nameof(ShowSearchResults));
+        }
     }
 
     public bool IsBreadcrumbMode => !IsPathEditing && !IsSearching;
+
+    // Entering search mode alone shouldn't blank out the folder the user is currently
+    // looking at — keep showing it (so e.g. a filename is still visible to reference)
+    // until they've actually typed something to search for.
+    public bool ShowSearchResults => IsSearching && !string.IsNullOrWhiteSpace(SearchQuery);
 
     private string _searchQuery = string.Empty;
     public string SearchQuery
     {
         get => _searchQuery;
-        set { if (SetField(ref _searchQuery, value)) ScheduleSearch(); }
+        set
+        {
+            if (!SetField(ref _searchQuery, value)) return;
+            OnPropertyChanged(nameof(ShowSearchResults));
+            ScheduleSearch();
+        }
     }
 
     private string _searchStatusText = string.Empty;
@@ -560,6 +575,16 @@ public class MainViewModel : ObservableObject, IDisposable
             null, AppConstants.SearchDebounceMs, Timeout.Infinite);
     }
 
+    // Enter in the search box should search right away rather than wait out the debounce —
+    // most noticeable when typing fast enough that the debounce hasn't fired yet.
+    public void RunSearchNow()
+    {
+        if (string.IsNullOrWhiteSpace(_searchQuery)) return;
+        _searchDebounce?.Dispose();
+        _searchDebounce = null;
+        _ = RunSearchAsync(_searchQuery);
+    }
+
     // Runs the recursive walk on a background thread, flushing matches to SearchResults in
     // small batches (by count or by time, whichever comes first) so a fast local disk can't
     // flood the UI thread with per-item updates, while a slow one still feels live.
@@ -587,7 +612,9 @@ public class MainViewModel : ObservableObject, IDisposable
                 foreach (var item in items)
                 {
                     SearchResults.Add(item);
-                    if (!item.IsDirectory) _thumbnailService.Enqueue(item, 24, token);
+                    // SearchResultsList renders full grid-sized tiles (ThumbnailTemplate), not
+                    // list/column row icons — request thumbnails at that size, not the icon size.
+                    if (!item.IsDirectory) _thumbnailService.Enqueue(item, ThumbnailSize, token);
                 }
             });
         }
