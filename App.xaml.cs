@@ -15,7 +15,13 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e); // creates MainWindow via StartupUri
+        base.OnStartup(e);
+
+        // --background (used by the "Start with Windows" entry) starts in the tray only;
+        // the window is built now but not shown until the user opens it from the tray.
+        MainWindow = new MainWindow();
+        if (!e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase))
+            MainWindow.Show();
 
         var settings = SettingsService.Load();
 
@@ -40,6 +46,9 @@ public partial class App : Application
         };
 
         var menu = new WinForms.ContextMenuStrip();
+        var open = menu.Items.Add("Open Taste", null, (_, _) => RestoreMainWindow());
+        open.Font = new System.Drawing.Font(open.Font, System.Drawing.FontStyle.Bold);
+        menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Quit", null, (_, _) => { Watcher.Stop(); Shutdown(); });
         _tray.ContextMenuStrip = menu;
 
@@ -55,7 +64,12 @@ public partial class App : Application
         var update = await UpdateService.CheckForUpdateAsync();
         if (update == null) return;
 
-        var dialog = new UpdateDialog(update) { Owner = MainWindow };
+        // Owner must be a window that has been shown — not the case when started in the tray.
+        var dialog = new UpdateDialog(update);
+        if (MainWindow is { IsVisible: true })
+            dialog.Owner = MainWindow;
+        else
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         dialog.ShowDialog();
         if (!dialog.UpdateAccepted) return;
 
@@ -79,7 +93,9 @@ public partial class App : Application
 
     private void RestoreMainWindow()
     {
-        if (MainWindow == null) return;
+        // Closed windows drop out of Windows, so if every browser window was closed
+        // (the app keeps running in the tray), open a fresh one.
+        MainWindow = Windows.OfType<MainWindow>().FirstOrDefault() ?? new MainWindow();
         MainWindow.Show();
         if (MainWindow.WindowState == WindowState.Minimized)
             MainWindow.WindowState = WindowState.Normal;
