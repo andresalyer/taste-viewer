@@ -68,14 +68,17 @@
                 CornerRadius="{StaticResource RadiusMD}"
                 Padding="12"
                 MaxHeight="280">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <TextBlock x:Name="NotesText"
-                           FontFamily="{StaticResource FontPrimary}"
-                           FontSize="{StaticResource FontSizeMD}"
-                           Foreground="{StaticResource FgPrimary}"
-                           TextWrapping="Wrap"
-                           LineHeight="19"/>
-            </ScrollViewer>
+            <FlowDocumentScrollViewer x:Name="NotesDoc"
+                                       IsToolBarVisible="False"
+                                       VerticalScrollBarVisibility="Auto"
+                                       Background="Transparent">
+                <FlowDocument x:Name="NotesFlowDoc"
+                              FontFamily="{StaticResource FontPrimary}"
+                              FontSize="{StaticResource FontSizeMD}"
+                              Foreground="{StaticResource FgPrimary}"
+                              Background="Transparent"
+                              PagePadding="0"/>
+            </FlowDocumentScrollViewer>
         </Border>
 
         <StackPanel Grid.Row="3"
