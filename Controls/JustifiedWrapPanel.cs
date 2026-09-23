@@ -16,6 +16,10 @@ public sealed class JustifiedWrapPanel : Panel
     public double MinGap { get => (double)GetValue(MinGapProperty); set => SetValue(MinGapProperty, value); }
     public double MaxGap { get => (double)GetValue(MaxGapProperty); set => SetValue(MaxGapProperty, value); }
 
+    // Current column count from the last layout pass — lets callers (e.g. Up/Down
+    // arrow-key handling) jump by a full row without duplicating the layout math.
+    public int Columns { get; private set; } = 1;
+
     // Compute column count and clamped gap from available width.
     // MinGap is baked into the column formula so gap never falls below it.
     // MaxGap caps the gap; when hit, items left-align with the max gap applied.
@@ -38,6 +42,7 @@ public sealed class JustifiedWrapPanel : Panel
         if (itemW == 0) return Size.Empty;
 
         var (cols, _) = Layout(availableSize.Width, itemW);
+        Columns = cols;
         int rows = (InternalChildren.Count + cols - 1) / cols;
 
         return new Size(availableSize.Width, rows * itemH);

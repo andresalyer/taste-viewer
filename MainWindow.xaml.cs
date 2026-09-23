@@ -11,6 +11,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Threading.Tasks;
+using Taste.Controls;
 using Taste.Interop;
 using Taste.Services;
 using Taste.Shared;
@@ -399,15 +400,55 @@ public partial class MainWindow : Window
                 Vm.UndoDeleteCommand.Execute(null);
                 e.Handled = true;
                 break;
+            case Key.Up:
+            case Key.Down:
+                // Grid view wraps tiles into rows via JustifiedWrapPanel, which plain
+                // ListBox arrow-key handling treats as one long list (Up/Down move by a
+                // single item, same as Left/Right). List view is already a single column,
+                // so its default behavior is correct as-is.
+                if (Vm.IsGridView)
+                {
+                    MoveGridSelection(e.Key == Key.Down ? 1 : -1);
+                    e.Handled = true;
+                }
+                break;
             case Key.Space:
                 if (Vm.SelectedItem is not null)
                     ((App)Application.Current).Preview.OpenOrClose(
                         Vm.SelectedItem.FullPath,
                         Vm.CurrentPath,
-                        Vm.OrderedFilePaths.ToList());
+                        Vm.OrderedFilePaths.ToList(),
+                        Vm.IsGridView ? FindVisualChild<JustifiedWrapPanel>(FileListBox)?.Columns ?? 1 : 1);
                 e.Handled = true;
                 break;
         }
+    }
+
+    // Jumps a full row up/down in grid view by stepping the current on-screen index
+    // by the panel's live column count, rather than by one item like Left/Right.
+    private void MoveGridSelection(int rowDelta)
+    {
+        var items = Vm.OrderedFiles;
+        if (items.Count == 0) return;
+
+        int columns = FindVisualChild<JustifiedWrapPanel>(FileListBox)?.Columns ?? 1;
+        int currentIndex = Vm.SelectedItem != null && items is IList<FileItemViewModel> list
+            ? list.IndexOf(Vm.SelectedItem)
+            : -1;
+
+        int newIndex = currentIndex < 0
+            ? 0
+            : Math.Clamp(currentIndex + rowDelta * columns, 0, items.Count - 1);
+
+        var target = items[newIndex];
+        FileListBox.SelectedItem = target;
+        FileListBox.ScrollIntoView(target);
+
+        // Setting SelectedItem alone doesn't move keyboard focus off the previously
+        // focused tile — leaving it there makes the *next* arrow key (e.g. Left/Right)
+        // navigate relative to the stale focus instead of the newly selected tile.
+        if (FileListBox.ItemContainerGenerator.ContainerFromItem(target) is FrameworkElement container)
+            container.Focus();
     }
 
     // Keeps the main window's selection highlight in sync as the preview window
@@ -420,16 +461,21 @@ public partial class MainWindow : Window
             foreach (var col in Vm.Columns)
             {
                 var match = col.Items.FirstOrDefault(i =>
-                    !i.IsDirectory && string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase));
                 if (match == null) continue;
+
+                // Setting SelectedItem on a directory would otherwise trigger
+                // ColumnPanel_SelectionChanged's auto-drill into that folder.
+                _suppressColumnAutoOpen = true;
                 col.SelectedItem = match;
+                _suppressColumnAutoOpen = false;
                 return;
             }
         }
         else
         {
             var match = Vm.Files.FirstOrDefault(i =>
-                !i.IsDirectory && string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase));
+                string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase));
             if (match == null) return;
 
             if (Vm.IsListView)
