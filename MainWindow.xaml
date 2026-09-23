@@ -640,6 +640,9 @@
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                        </DataTrigger>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                         </Trigger>
@@ -1565,7 +1568,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      VirtualizingPanel.IsVirtualizing="True"
-                     Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}"
+                     Visibility="{Binding ShowSearchResults, Converter={StaticResource BoolToVis}}"
                      MouseDoubleClick="SearchResultsList_MouseDoubleClick">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -1722,13 +1725,18 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="RadioButton">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Grid Width="16" Height="16" VerticalAlignment="Center">
-                                                <Ellipse Stroke="{StaticResource BorderStrong}" StrokeThickness="1.25" Width="16" Height="16"/>
-                                                <Ellipse x:Name="Dot" Fill="{StaticResource Accent}" Width="8" Height="8" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-                                            </Grid>
-                                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                        </StackPanel>
+                                        <!-- Background="Transparent" (not the default null) is what makes the
+                                             whole row hit-testable — otherwise only the ring's stroke pixels and
+                                             the text glyphs themselves register clicks, so most taps miss. -->
+                                        <Border Background="Transparent">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Grid Width="16" Height="16" VerticalAlignment="Center">
+                                                    <Ellipse Stroke="{StaticResource BorderStrong}" StrokeThickness="1.25" Width="16" Height="16"/>
+                                                    <Ellipse x:Name="Dot" Fill="{StaticResource Accent}" Width="8" Height="8" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                                </Grid>
+                                                <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsChecked" Value="True">
                                                 <Setter TargetName="Dot" Property="Visibility" Value="Visible"/>
