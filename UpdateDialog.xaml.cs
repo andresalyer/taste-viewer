@@ -1,29 +1,40 @@
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Navigation;
+using Taste.Interop;
 using Taste.Services;
 
 namespace Taste;
 
 public partial class UpdateDialog : Window
 {
-    // Matches **bold**, `code`, [text](url) markdown links, and bare https:// URLs
-    // (GitHub's auto-generated release notes use the bare-URL form: "* ... by @user in https://...").
+    // Matches **bold** and `code` spans.
     private static readonly Regex InlinePattern = new(
-        @"\*\*(?<bold>.+?)\*\*|`(?<code>[^`]+?)`|\[(?<linktext>[^\]]+)\]\((?<linkurl>[^)]+)\)|(?<bareurl>https?://\S+)",
+        @"\*\*(?<bold>.+?)\*\*|`(?<code>[^`]+?)`",
         RegexOptions.Compiled);
 
     private static readonly Regex BulletLinePattern = new(@"^[-*]\s+", RegexOptions.Compiled);
     private static readonly Regex HeadingLinePattern = new(@"^(#{1,6})\s+", RegexOptions.Compiled);
+
+    // GitHub's auto-generated changelog format: "<description> by @user in <url>" — the
+    // link is redundant noise in a short "what's new" summary, so it's dropped.
+    private static readonly Regex TrailingByUserLink = new(
+        @"\s+by\s+@[\w.-]+\s+in\s+https?://\S+\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    // A standalone "**Full Changelog**: <url>" line — pure link, no description, so the whole line is dropped.
+    private static readonly Regex FullChangelogLine = new(
+        @"^\*\*Full Changelog\*\*:?\s*https?://\S+\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex BareUrl = new(@"\s*https?://\S+", RegexOptions.Compiled);
 
     public bool UpdateAccepted { get; private set; }
 
     public UpdateDialog(UpdateInfo update)
     {
         InitializeComponent();
+        Loaded += UpdateDialog_Loaded;
         TitleText.Text = $"Taste Viewer {update.Version} is available";
 
         NotesFlowDoc.Blocks.Clear();
@@ -38,18 +49,25 @@ public partial class UpdateDialog : Window
         }
     }
 
+    private void UpdateDialog_Loaded(object sender, RoutedEventArgs e)
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        ShellInterop.SetDarkTitleBar(hwnd);
+    }
+
     private IEnumerable<Block> ParseMarkdown(string markdown)
     {
         foreach (var rawLine in markdown.Replace("\r\n", "\n").Split('\n'))
         {
             var line = rawLine.Trim();
             if (line.Length == 0) continue;
+            if (FullChangelogLine.IsMatch(line)) continue;
 
             var headingMatch = HeadingLinePattern.Match(line);
             if (headingMatch.Success)
             {
                 var heading = new Paragraph { Margin = new Thickness(0, 8, 0, 6), FontWeight = FontWeights.SemiBold };
-                AddInlines(heading, line[headingMatch.Length..]);
+                AddInlines(heading, StripLinks(line[headingMatch.Length..]));
                 yield return heading;
                 continue;
             }
@@ -59,16 +77,21 @@ public partial class UpdateDialog : Window
             {
                 var bullet = new Paragraph { Margin = new Thickness(12, 0, 0, 6), TextIndent = -12 };
                 bullet.Inlines.Add(new Run("•  "));
-                AddInlines(bullet, line[bulletMatch.Length..]);
+                AddInlines(bullet, StripLinks(line[bulletMatch.Length..]));
                 yield return bullet;
                 continue;
             }
 
             var paragraph = new Paragraph { Margin = new Thickness(0, 0, 0, 8) };
-            AddInlines(paragraph, line);
+            AddInlines(paragraph, StripLinks(line));
             yield return paragraph;
         }
     }
+
+    // Drops the "by @user in <url>" suffix GitHub appends to each auto-generated changelog
+    // entry, then any other bare URL left in the line, so only the plain description remains.
+    private static string StripLinks(string text) =>
+        BareUrl.Replace(TrailingByUserLink.Replace(text, ""), "").TrimEnd();
 
     private void AddInlines(Paragraph paragraph, string text)
     {
@@ -79,48 +102,15 @@ public partial class UpdateDialog : Window
                 paragraph.Inlines.Add(new Run(text[pos..m.Index]));
 
             if (m.Groups["bold"].Success)
-            {
                 paragraph.Inlines.Add(new Bold(new Run(m.Groups["bold"].Value)));
-            }
             else if (m.Groups["code"].Success)
-            {
                 paragraph.Inlines.Add(new Run(m.Groups["code"].Value) { FontFamily = new FontFamily("Consolas") });
-            }
-            else if (m.Groups["linktext"].Success)
-            {
-                paragraph.Inlines.Add(MakeHyperlink(m.Groups["linktext"].Value, m.Groups["linkurl"].Value));
-            }
-            else if (m.Groups["bareurl"].Success)
-            {
-                var url = m.Groups["bareurl"].Value.TrimEnd('.', ',', ')');
-                paragraph.Inlines.Add(MakeHyperlink(url, url));
-            }
 
             pos = m.Index + m.Length;
         }
 
         if (pos < text.Length)
             paragraph.Inlines.Add(new Run(text[pos..]));
-    }
-
-    private Inline MakeHyperlink(string text, string url)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            return new Run(text);
-
-        var link = new Hyperlink(new Run(text))
-        {
-            NavigateUri = uri,
-            Foreground = (Brush)FindResource("Accent"),
-        };
-        link.RequestNavigate += Hyperlink_RequestNavigate;
-        return link;
-    }
-
-    private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
-    {
-        Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
-        e.Handled = true;
     }
 
     private void UpdateNow_Click(object sender, RoutedEventArgs e)
