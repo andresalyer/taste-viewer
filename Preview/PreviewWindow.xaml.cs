@@ -25,6 +25,11 @@ public partial class PreviewWindow : Window
     private List<string> _files = new();
     private int          _index = -1;
 
+    // How many items make up a "row" in whatever view opened this preview (grid view's
+    // current column count, or 1 for list/column view where each item is its own row).
+    // Lets Up/Down jump a full row instead of stepping one item like Left/Right.
+    private int _rowStride = 1;
+
     // Zoom
     private double _naturalW, _naturalH;
     private double _scale    = 1.0;
@@ -104,7 +109,7 @@ public partial class PreviewWindow : Window
 
     // ── Open / Close ─────────────────────────────────────────────────────────
 
-    public void OpenOrClose(string selectedPath, string folderPath, List<string> allFiles)
+    public void OpenOrClose(string selectedPath, string folderPath, List<string> allFiles, int rowStride = 1)
     {
         if (IsVisible && string.Equals(
                 _files.Count > _index && _index >= 0 ? _files[_index] : null,
@@ -115,6 +120,7 @@ public partial class PreviewWindow : Window
         }
 
         _files = allFiles;
+        _rowStride = Math.Max(1, rowStride);
         _index = allFiles.FindIndex(f => string.Equals(f, selectedPath, StringComparison.OrdinalIgnoreCase));
         if (_index < 0) _index = 0;
 
@@ -263,7 +269,9 @@ public partial class PreviewWindow : Window
     void Navigate(int delta)
     {
         if (_files.Count == 0) return;
-        _index = (_index + delta + _files.Count) % _files.Count;
+        // Safe for |delta| larger than _files.Count (e.g. a row-jump in a folder
+        // with fewer files than the grid has columns), unlike a single-period wrap.
+        _index = ((_index + delta) % _files.Count + _files.Count) % _files.Count;
         LoadCurrent();
     }
 
@@ -1051,13 +1059,19 @@ public partial class PreviewWindow : Window
                 e.Handled = true;
                 break;
             case Key.Right:
-            case Key.Down:
                 Navigate(+1);
                 e.Handled = true;
                 break;
             case Key.Left:
-            case Key.Up:
                 Navigate(-1);
+                e.Handled = true;
+                break;
+            case Key.Down:
+                Navigate(+_rowStride);
+                e.Handled = true;
+                break;
+            case Key.Up:
+                Navigate(-_rowStride);
                 e.Handled = true;
                 break;
             case Key.Delete:
