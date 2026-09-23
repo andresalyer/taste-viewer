@@ -13,14 +13,45 @@ public partial class App : Application
     internal ExplorerWatcher Watcher { get; private set; } = null!;
     private  WinForms.NotifyIcon _tray = null!;
 
+    // One Taste per user session: a second launch (pinned taskbar icon, Start menu)
+    // signals the running copy to show its window and exits.
+    private const string InstanceMutexName = @"Local\Taste.SingleInstance";
+    private const string ShowWindowEventName = @"Local\Taste.ShowWindow";
+    private Mutex? _instanceMutex;
+    private EventWaitHandle? _showWindowEvent;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool AllowSetForegroundWindow(int dwProcessId);
+    private const int ASFW_ANY = -1;
+
     protected override void OnStartup(StartupEventArgs e)
     {
+        bool background = e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase);
+
+        _instanceMutex = new Mutex(true, InstanceMutexName, out bool isFirstInstance);
+        _showWindowEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ShowWindowEventName);
+        if (!isFirstInstance)
+        {
+            // This process was launched by the user, so it holds foreground rights;
+            // pass them on so the running copy's window can come to the front.
+            if (!background)
+            {
+                AllowSetForegroundWindow(ASFW_ANY);
+                _showWindowEvent.Set();
+            }
+            Shutdown();
+            return;
+        }
+
+        ThreadPool.RegisterWaitForSingleObject(_showWindowEvent,
+            (_, _) => Dispatcher.BeginInvoke((Action)RestoreMainWindow), null, Timeout.Infinite, executeOnlyOnce: false);
+
         base.OnStartup(e);
 
         // --background (used by the "Start with Windows" entry) starts in the tray only;
         // the window is built now but not shown until the user opens it from the tray.
         MainWindow = new MainWindow();
-        if (!e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase))
+        if (!background)
             MainWindow.Show();
 
         var settings = SettingsService.Load();
@@ -88,6 +119,8 @@ public partial class App : Application
     {
         _tray?.Dispose();
         Watcher?.Stop();
+        _showWindowEvent?.Dispose();
+        _instanceMutex?.Dispose(); // closing the handle frees the name for the next launch
         base.OnExit(e);
     }
 
