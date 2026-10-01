@@ -64,8 +64,8 @@ public sealed class ThumbnailService : IDisposable
             if (token.IsCancellationRequested) continue;
 
             // Cloud placeholders aren't fully downloaded — GetThumbnail's ResizeToFit path would force a
-            // hydration/download per tile. GetShellThumbnail (InCacheOnly) asks the provider for whatever
-            // cheap preview it already has (same mechanism Explorer and PreviewWindow use) with no download.
+            // hydration/download per tile. GetShellThumbnail asks for the cached thumbnail, then the
+            // provider's own preview (same mechanism Explorer and PreviewWindow use), with no download.
             var thumbnail = item.IsCloudPlaceholder
                 ? ShellInterop.GetShellThumbnail(item.FullPath, size)
                 : ShellInterop.GetThumbnail(item.FullPath, size);
