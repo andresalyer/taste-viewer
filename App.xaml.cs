@@ -48,12 +48,6 @@ public partial class App : Application
 
         base.OnStartup(e);
 
-        // --background (used by the "Start with Windows" entry) starts in the tray only;
-        // the window is built now but not shown until the user opens it from the tray.
-        MainWindow = new MainWindow();
-        if (!background)
-            MainWindow.Show();
-
         var settings = SettingsService.Load();
 
         Preview = new PreviewWindow();
@@ -84,6 +78,13 @@ public partial class App : Application
         _tray.ContextMenuStrip = menu;
 
         _tray.DoubleClick += (_, _) => RestoreMainWindow();
+
+        // Created last: Show() can raise Loaded synchronously, and MainWindow.OnLoaded
+        // uses Preview. --background (the "Start with Windows" entry) starts in the tray
+        // only; the window is built now but not shown until opened from the tray.
+        MainWindow = new MainWindow();
+        if (!background)
+            MainWindow.Show();
 
         _ = CheckForUpdatesAsync();
     }

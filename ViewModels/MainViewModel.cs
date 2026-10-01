@@ -45,10 +45,9 @@ public class MainViewModel : ObservableObject, IDisposable
     // scrolling, so it's only populated/consumed while IsGridView.
     private readonly Dictionary<string, double> _scrollPositions = new();
 
-    // Folder enumeration is paged in from here as the user scrolls, rather than capped outright.
-    private IEnumerator<DirectoryInfo>? _dirEnumerator;
-    private IEnumerator<FileInfo>? _fileEnumerator;
-    private bool _isLoadingMore;
+    // The whole folder's metadata is read and sorted up front; items are paged into Files
+    // from here as the user scrolls, so the first page is the true top of the sort order.
+    private List<FileItemViewModel> _pendingItems = new();
 
     public ObservableCollection<FileItemViewModel> Files        { get; } = new();
     public ObservableCollection<PathSegment>       PathSegments { get; } = new();
@@ -677,14 +676,13 @@ public class MainViewModel : ObservableObject, IDisposable
     }
 
     // ── Folder loading ────────────────────────────────────────────
-    // Folders are loaded a page at a time so huge folders don't stall the UI or get
-    // silently truncated — LoadMoreIfNeeded() pulls in the next page as the user scrolls near
-    // the bottom of what's currently loaded, using the enumerators left open from the last page.
+    // The folder's entries (name/date/size only — cheap) are all read and sorted first, then
+    // shown a page at a time so huge folders don't stall the UI. LoadMoreIfNeeded() pulls in
+    // the next page as the user scrolls near the bottom of what's currently loaded.
 
     private const int PageSize  = 500;
-    private const int EnumBatch = 50;
 
-    public bool HasMoreItems => _dirEnumerator != null || _fileEnumerator != null;
+    public bool HasMoreItems => _pendingItems.Count > 0;
 
     private async Task LoadFolderAsync(string path)
     {
@@ -703,7 +701,7 @@ public class MainViewModel : ObservableObject, IDisposable
         _watcher?.Dispose();
         _watcher = null;
 
-        DisposeEnumerators();
+        _pendingItems = new();
 
         _currentPath = path;
         PendingScrollRestore = _viewMode == ViewMode.Grid && _scrollPositions.TryGetValue(path, out var savedOffset)
@@ -722,18 +720,24 @@ public class MainViewModel : ObservableObject, IDisposable
         IsLoading    = true;
         StatusText   = "Loading…";
 
+        var comparer = new FileItemComparer(_sortMode, _sortDirection);
+        List<FileItemViewModel> all;
         try
         {
-            var di = new DirectoryInfo(path);
-            _dirEnumerator  = di.EnumerateDirectories().GetEnumerator();
-            _fileEnumerator = di.EnumerateFiles().GetEnumerator();
+            all = await Task.Run(() => ReadFolder(path, comparer, token), token);
         }
+        catch (OperationCanceledException) { return; }
         catch
         {
             IsLoading = false;
             StatusText = "Could not open folder.";
             return;
         }
+
+        if (token.IsCancellationRequested) return;
+        if (comparer.Mode != _sortMode || comparer.Direction != _sortDirection) // sort changed mid-read
+            all.Sort(new FileItemComparer(_sortMode, _sortDirection).Compare);
+        _pendingItems = all;
 
         await LoadNextPageAsync();
 
@@ -753,126 +757,100 @@ public class MainViewModel : ObservableObject, IDisposable
         _lastThumbScrollOffset = -1;
         RequestVisibleThumbnails(_loadCts.Token);
 
-        // Skip the watcher while there's more to page in — not worth the overhead, and a live
-        // folder change mid-pagination would be hard to reconcile with the open enumerators.
-        if (!HasMoreItems)
-            SetupWatcher(path);
+        // Changes are applied in place (RefreshInPlaceAsync), so paged folders are watched too.
+        SetupWatcher(path);
 
         if (_viewMode == ViewMode.Column)
             InitColumns();
     }
 
-    /// Pulls in the next page of items from the enumerators left open by the last page,
-    /// appending to Files. Safe to call repeatedly (e.g. from scroll); no-ops if a page is
-    /// already loading or the folder is fully loaded.
-    public async Task LoadNextPageAsync()
+    /// Moves the next page of items from _pendingItems into Files. The items are already built
+    /// (ReadFolder did the disk work), so this runs on the UI thread. No-ops once fully loaded.
+    public Task LoadNextPageAsync()
     {
-        if (_isLoadingMore || !HasMoreItems) return;
-        _isLoadingMore = true;
-        var token = _loadCts.Token;
+        if (!HasMoreItems) return Task.CompletedTask;
 
-        var progress = new Progress<List<FileItemViewModel>>(batch =>
-        {
-            if (token.IsCancellationRequested) return;
-            foreach (var item in batch)
-                Files.Add(item);
-        });
-
-        try
-        {
-            await Task.Run(() => EnumeratePage(progress, token), token);
-        }
-        catch (OperationCanceledException) { return; }
-        finally { _isLoadingMore = false; }
-
-        if (token.IsCancellationRequested) return;
+        int count = Math.Min(PageSize, _pendingItems.Count);
+        foreach (var item in _pendingItems.Take(count))
+            Files.Add(item);
+        _pendingItems.RemoveRange(0, count);
 
         UpdateStatus();
-        RequestVisibleThumbnails(token);
+        RequestVisibleThumbnails(_loadCts.Token);
+        return Task.CompletedTask;
     }
 
     public void LoadMoreIfNeeded()
     {
-        if (_isLoadingMore || !HasMoreItems) return;
+        if (!HasMoreItems) return;
         _ = LoadNextPageAsync();
     }
 
-    /// Consumes up to PageSize items from _dirEnumerator then _fileEnumerator, reporting in
-    /// batches. Exhausted enumerators are disposed and nulled out so HasMoreItems reflects reality.
-    private void EnumeratePage(IProgress<List<FileItemViewModel>> progress, CancellationToken token)
+    /// Reads every visible entry in the folder (metadata only — no thumbnails or file contents,
+    /// so this stays cheap even for iCloud placeholders) and returns them in sort order.
+    private static List<FileItemViewModel> ReadFolder(string path, FileItemComparer comparer, CancellationToken token)
     {
-        var batch  = new List<FileItemViewModel>(EnumBatch);
-        int loaded = 0;
+        var di    = new DirectoryInfo(path);
+        var items = new List<FileItemViewModel>();
 
-        void Flush()
-        {
-            if (batch.Count == 0) return;
-            progress.Report(batch.ToList());
-            batch.Clear();
-        }
-
-        while (loaded < PageSize && _dirEnumerator != null)
+        foreach (var d in di.EnumerateDirectories())
         {
             token.ThrowIfCancellationRequested();
-            bool moved;
-            try { moved = _dirEnumerator.MoveNext(); }
-            catch { moved = false; }
-            if (!moved) { _dirEnumerator.Dispose(); _dirEnumerator = null; break; }
-
             try
             {
-                var d = _dirEnumerator.Current;
                 if ((d.Attributes & FileAttributes.Hidden) != 0) continue;
                 if (d.Name.StartsWith('.')) continue;
-                batch.Add(new FileItemViewModel(d));
-                loaded++;
-                if (batch.Count >= EnumBatch) Flush();
+                items.Add(new FileItemViewModel(d));
             }
             catch { /* skip inaccessible entries */ }
         }
 
-        while (loaded < PageSize && _fileEnumerator != null)
+        foreach (var f in di.EnumerateFiles())
         {
             token.ThrowIfCancellationRequested();
-            bool moved;
-            try { moved = _fileEnumerator.MoveNext(); }
-            catch { moved = false; }
-            if (!moved) { _fileEnumerator.Dispose(); _fileEnumerator = null; break; }
-
             try
             {
-                var f = _fileEnumerator.Current;
                 if ((f.Attributes & FileAttributes.Hidden) != 0) continue;
                 if (f.Name.StartsWith('.')) continue;
-                batch.Add(new FileItemViewModel(f));
-                loaded++;
-                if (batch.Count >= EnumBatch) Flush();
+                items.Add(new FileItemViewModel(f));
             }
             catch { /* skip inaccessible entries */ }
         }
 
-        Flush();
-    }
-
-    private void DisposeEnumerators()
-    {
-        _dirEnumerator?.Dispose();
-        _dirEnumerator = null;
-        _fileEnumerator?.Dispose();
-        _fileEnumerator = null;
+        items.Sort(comparer.Compare);
+        return items;
     }
 
     // ── Sorting ───────────────────────────────────────────────────
 
     private void ApplySort()
     {
-        _filesView.CustomSort = new FileItemComparer(_sortMode, _sortDirection);
+        var comparer = new FileItemComparer(_sortMode, _sortDirection);
+        _filesView.CustomSort = comparer;
+
+        // Only part of the folder is showing: re-pick the shown page from the whole folder,
+        // so e.g. Date Modified / Descending really shows the newest items, not just the
+        // newest of whatever happened to be loaded.
+        if (HasMoreItems)
+        {
+            var all = Files.Concat(_pendingItems).ToList();
+            all.Sort(comparer.Compare);
+            SelectedItem = null;
+            SelectedItems.Clear();
+            Files.Clear();
+            _pendingItems = all;
+            _ = LoadNextPageAsync();
+        }
+
         _lastThumbScrollOffset = -1;
         RequestVisibleThumbnails(_loadCts.Token);
     }
 
     private sealed class FileItemComparer(SortMode mode, SortDirection direction) : IComparer
     {
+        public SortMode      Mode      => mode;
+        public SortDirection Direction => direction;
+
         public int Compare(object? x, object? y)
         {
             if (x is not FileItemViewModel a || y is not FileItemViewModel b) return 0;
@@ -1150,9 +1128,52 @@ public class MainViewModel : ObservableObject, IDisposable
             Application.Current?.Dispatcher.BeginInvoke(() =>
             {
                 if (Files.Any(f => f.IsRenaming)) return;
-                _ = LoadFolderAsync(_currentPath);
+                _ = RefreshInPlaceAsync();
             }),
             null, AppConstants.WatcherDebounceMs, Timeout.Infinite);
+    }
+
+    /// Re-reads the folder listing and applies only the differences: new items are slotted in
+    /// at their sort position, vanished ones removed. Existing items (and their thumbnails),
+    /// scroll position and how many items are shown are left alone — cheap even for huge folders.
+    private async Task RefreshInPlaceAsync()
+    {
+        string path  = _currentPath;
+        var token    = _loadCts.Token;
+        var comparer = new FileItemComparer(_sortMode, _sortDirection);
+
+        List<FileItemViewModel> fresh;
+        try { fresh = await Task.Run(() => ReadFolder(path, comparer, token), token); }
+        catch { return; } // folder gone or load superseded — a navigation will sort it out
+
+        if (token.IsCancellationRequested || path != _currentPath) return;
+        if (comparer.Mode != _sortMode || comparer.Direction != _sortDirection) return; // ApplySort will re-page
+
+        // Reuse existing items so thumbnails/selection survive
+        var existing = Files.Concat(_pendingItems)
+                            .GroupBy(f => f.FullPath, StringComparer.OrdinalIgnoreCase)
+                            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        var merged = fresh.Select(f => existing.TryGetValue(f.FullPath, out var old) ? old : f).ToList();
+
+        // Fully loaded folders stay fully loaded; paged ones keep showing the same number of items
+        int shownCount = HasMoreItems ? Math.Min(Files.Count, merged.Count) : merged.Count;
+        var shown = new HashSet<FileItemViewModel>(merged.Take(shownCount));
+
+        foreach (var item in Files.Where(f => !shown.Contains(f)).ToList())
+        {
+            Files.Remove(item);
+            SelectedItems.Remove(item);
+            if (SelectedItem == item) SelectedItem = null;
+        }
+        var current = new HashSet<FileItemViewModel>(Files);
+        foreach (var item in merged.Take(shownCount))
+            if (!current.Contains(item)) Files.Add(item); // CustomSort places it in order
+
+        _pendingItems = merged.Skip(shownCount).ToList();
+
+        UpdateStatus();
+        _lastThumbScrollOffset = -1;
+        RequestVisibleThumbnails(_loadCts.Token);
     }
 
     public void Dispose()
@@ -1166,6 +1187,5 @@ public class MainViewModel : ObservableObject, IDisposable
         _searchCts.Dispose();
         _watcher?.Dispose();
         _thumbnailService.Dispose();
-        DisposeEnumerators();
     }
 }

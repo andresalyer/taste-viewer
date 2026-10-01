@@ -230,7 +230,14 @@ public static class ShellInterop
             int hr = SHCreateItemFromParsingName(path, IntPtr.Zero, IID_IShellItemImageFactory, out object obj);
             if (hr != 0 || obj is not IShellItemImageFactory factory) return null;
             hr = factory.GetImage(new SIZE { cx = size, cy = size }, SIIGBF.InCacheOnly, out hbm);
-            if (hr != 0 || hbm == IntPtr.Zero) return null;
+            if (hr != 0 || hbm == IntPtr.Zero)
+            {
+                // Not in Windows' thumbnail cache yet (e.g. photos that just synced). ThumbnailOnly
+                // asks the cloud provider for its preview — for iCloud this returns quickly and
+                // leaves the file online-only (verified: no hydration).
+                hr = factory.GetImage(new SIZE { cx = size, cy = size }, SIIGBF.ThumbnailOnly, out hbm);
+                if (hr != 0 || hbm == IntPtr.Zero) return null;
+            }
             return HBitmapToBitmapSource(hbm);
         }
         catch { return null; }
