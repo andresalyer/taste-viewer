@@ -368,6 +368,11 @@ public partial class MainWindow : Window
             FeedbackOverlay.Visibility = Visibility.Collapsed;
             e.Handled = true;
         }
+        else if (e.Key == Key.Escape && AboutOverlay.Visibility == Visibility.Visible)
+        {
+            AboutOverlay.Visibility = Visibility.Collapsed;
+            e.Handled = true;
+        }
         else if (e.Key == Key.N && (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0)
         {
             var count = Application.Current.Windows.OfType<MainWindow>().Count();
@@ -1376,5 +1381,30 @@ public partial class MainWindow : Window
         catch { }
 
         FeedbackOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    // ── About ──────────────────────────────────────────────────────
+
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        AboutVersionText.Text = v == null ? "Version unknown" : $"Version {v.ToString(3)}";
+        AboutOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void CloseAbout_Click(object sender, RoutedEventArgs e) =>
+        AboutOverlay.Visibility = Visibility.Collapsed;
+
+    // Clicking the dimmed backdrop closes it; clicks on the card itself don't bubble out to it.
+    private void AboutOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        AboutOverlay.Visibility = Visibility.Collapsed;
+
+    private void AboutCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        e.Handled = true;
+
+    private void AboutRepoLink_Click(object sender, RoutedEventArgs e)
+    {
+        try { Process.Start(new ProcessStartInfo(FeedbackRepoUrl) { UseShellExecute = true }); }
+        catch { }
     }
 }
