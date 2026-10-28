@@ -418,6 +418,18 @@ public partial class MainWindow : Window
                 Vm.UndoDeleteCommand.Execute(null);
                 e.Handled = true;
                 break;
+            case Key.C when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                SetClipboardFiles(GetSelectedPaths(), cut: false);
+                e.Handled = true;
+                break;
+            case Key.X when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                SetClipboardFiles(GetSelectedPaths(), cut: true);
+                e.Handled = true;
+                break;
+            case Key.V when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                PasteIntoCurrentFolder();
+                e.Handled = true;
+                break;
             case Key.Up:
             case Key.Down:
                 // Grid view wraps tiles into rows via JustifiedWrapPanel, which plain
@@ -1098,6 +1110,11 @@ public partial class MainWindow : Window
         if (_emptyMenuColumn != null) Vm.CreateNewFolderInColumn(_emptyMenuColumn);
     }
 
+    private void ColumnEmptyPaste_Click(object sender, RoutedEventArgs e)
+    {
+        if (_emptyMenuColumn != null) PasteClipboardInto(_emptyMenuColumn.Path);
+    }
+
     // Only used to keep the Left-key "select matching folder in the previous column" case
     // from re-triggering ColumnFolderOpened (that column is already open — it's where we came from).
     private bool _suppressColumnAutoOpen;
@@ -1157,6 +1174,21 @@ public partial class MainWindow : Window
 
             case Key.Delete:
                 Vm.DeleteSelectedInColumn(col);
+                e.Handled = true;
+                break;
+
+            case Key.C when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                if (col.SelectedItem is { } copyItem) SetClipboardFiles(new[] { copyItem.FullPath }, cut: false);
+                e.Handled = true;
+                break;
+
+            case Key.X when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                if (col.SelectedItem is { } cutItem) SetClipboardFiles(new[] { cutItem.FullPath }, cut: true);
+                e.Handled = true;
+                break;
+
+            case Key.V when (e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0:
+                PasteClipboardInto(col.Path);
                 e.Handled = true;
                 break;
         }
@@ -1274,32 +1306,37 @@ public partial class MainWindow : Window
         return sc;
     }
 
-    private void ContextCut_Click(object sender, RoutedEventArgs e)
+    // Cut marks the clipboard with a "move" drop effect, same as Explorer, so a paste
+    // here or in Explorer moves the files instead of copying them.
+    private static void SetClipboardFiles(string[] paths, bool cut)
     {
-        var paths = GetSelectedPaths();
         if (paths.Length == 0) return;
         try
         {
             var data = new DataObject();
             data.SetFileDropList(ToStringCollection(paths));
-            data.SetData("Preferred DropEffect", new MemoryStream(new byte[] { 2, 0, 0, 0 }));
+            if (cut) data.SetData("Preferred DropEffect", new MemoryStream(new byte[] { 2, 0, 0, 0 }));
             Clipboard.SetDataObject(data, true);
         }
         catch { }
     }
 
-    private void ContextCopy_Click(object sender, RoutedEventArgs e)
+    private static void SetClipboardText(string[] paths)
     {
-        var paths = GetSelectedPaths();
         if (paths.Length == 0) return;
-        try { Clipboard.SetFileDropList(ToStringCollection(paths)); }
+        try { Clipboard.SetText(string.Join(Environment.NewLine, paths)); }
         catch { }
     }
 
-    private void ContextPaste_Click(object sender, RoutedEventArgs e)
+    // Returns false when there were no files on the clipboard to paste.
+    private bool PasteClipboardInto(string destFolder)
     {
-        var list = Clipboard.GetFileDropList();
-        if (list == null || list.Count == 0) return;
+        if (string.IsNullOrEmpty(destFolder)) return false;
+
+        StringCollection? list;
+        try { list = Clipboard.GetFileDropList(); }
+        catch { return false; }
+        if (list == null || list.Count == 0) return false;
 
         bool isMove = false;
         try
@@ -1310,9 +1347,21 @@ public partial class MainWindow : Window
         catch { }
 
         var paths = list.Cast<string>().Where(s => s != null).ToArray();
-        ExecuteFileDrop(Vm.CurrentPath, paths, isCopy: !isMove);
-        Vm.RefreshCommand.Execute(null);
+        ExecuteFileDrop(destFolder, paths, isCopy: !isMove);
+
+        // A cut is one-shot: after the move the clipboard paths no longer exist.
+        if (isMove) try { Clipboard.Clear(); } catch { }
+        return true;
     }
+
+    private void PasteIntoCurrentFolder()
+    {
+        if (PasteClipboardInto(Vm.CurrentPath)) Vm.RefreshCommand.Execute(null);
+    }
+
+    private void ContextCut_Click(object sender, RoutedEventArgs e)   => SetClipboardFiles(GetSelectedPaths(), cut: true);
+    private void ContextCopy_Click(object sender, RoutedEventArgs e)  => SetClipboardFiles(GetSelectedPaths(), cut: false);
+    private void ContextPaste_Click(object sender, RoutedEventArgs e) => PasteIntoCurrentFolder();
 
     private void ContextRename_Click(object sender, RoutedEventArgs e) => Vm.RenameSelected();
 
@@ -1325,12 +1374,36 @@ public partial class MainWindow : Window
         ShellInterop.ShowProperties(Vm.OwnerHwnd, Vm.SelectedItem.FullPath);
     }
 
-    private void ContextCopyPath_Click(object sender, RoutedEventArgs e)
+    private void ContextCopyPath_Click(object sender, RoutedEventArgs e) => SetClipboardText(GetSelectedPaths());
+
+    // ── Search results clipboard ───────────────────────────────────
+    // Search results live in their own ListBox, so they don't feed Vm.SelectedItems.
+
+    private string[] GetSearchSelectedPaths() =>
+        SearchResultsList.SelectedItems.OfType<FileItemViewModel>().Select(i => i.FullPath).ToArray();
+
+    private void SearchCut_Click(object sender, RoutedEventArgs e)      => SetClipboardFiles(GetSearchSelectedPaths(), cut: true);
+    private void SearchCopy_Click(object sender, RoutedEventArgs e)     => SetClipboardFiles(GetSearchSelectedPaths(), cut: false);
+    private void SearchCopyPath_Click(object sender, RoutedEventArgs e) => SetClipboardText(GetSearchSelectedPaths());
+
+    // Right-click should select the result under the cursor (if not already selected).
+    private void SearchResultsList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
-        var paths = GetSelectedPaths();
-        if (paths.Length == 0) return;
-        try { Clipboard.SetText(string.Join(Environment.NewLine, paths)); }
-        catch { }
+        var item = GetFileItemFromSource(e.OriginalSource as DependencyObject);
+        if (item != null && !SearchResultsList.SelectedItems.Contains(item))
+            SearchResultsList.SelectedItem = item;
+    }
+
+    private void SearchResultsList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (SearchResultsList.SelectedItems.Count == 0) e.Handled = true;
+    }
+
+    private void SearchResultsList_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if ((e.KeyboardDevice.Modifiers & ModifierKeys.Control) == 0) return;
+        if (e.Key == Key.C) { SetClipboardFiles(GetSearchSelectedPaths(), cut: false); e.Handled = true; }
+        else if (e.Key == Key.X) { SetClipboardFiles(GetSearchSelectedPaths(), cut: true); e.Handled = true; }
     }
 
     private const string FeedbackRepoUrl = "https://github.com/andresalyer/taste-viewer";
