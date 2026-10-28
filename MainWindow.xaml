@@ -108,6 +108,19 @@
             </Setter>
         </Style>
 
+        <!-- WPF's default menu separator indents past the icon column; draw a plain
+             full-width line instead. -->
+        <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
+            <Setter Property="Margin" Value="{StaticResource MarginSeparator}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Separator">
+                        <Border Height="1" Background="{TemplateBinding Background}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="MenuItem">
             <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
             <Setter Property="Background" Value="Transparent"/>
