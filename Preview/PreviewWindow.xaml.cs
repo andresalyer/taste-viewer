@@ -894,6 +894,10 @@ public partial class PreviewWindow : Window
     {
         _speedIndex = Math.Clamp(index, 0, SpeedSteps.Length - 1);
         VideoView.SpeedRatio = SpeedSteps[_speedIndex];
+        // MediaElement stalls when the rate goes from below 1× to above 1× mid-playback.
+        // Re-seeking to the current position flushes the pipeline so the new rate takes effect.
+        if (VideoView.Source != null)
+            VideoView.Position = VideoView.Position;
         SpeedLabel.Text = $"{SpeedSteps[_speedIndex]}×";
     }
 
