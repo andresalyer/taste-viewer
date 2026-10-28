@@ -44,7 +44,7 @@
         <Thickness x:Key="PaddingIconBtn">8,4</Thickness>         <!-- icon button hit area -->
         <Thickness x:Key="PaddingMenuItem">10,5</Thickness>       <!-- menu item row -->
         <Thickness x:Key="MarginMenuItem">4,1</Thickness>         <!-- menu item outer margin -->
-        <Thickness x:Key="MarginSeparator">8,4</Thickness>        <!-- menu separator -->
+        <Thickness x:Key="MarginSeparator">0,4</Thickness>        <!-- menu separator -->
         <Thickness x:Key="PaddingContextMenu">0,4</Thickness>     <!-- context menu top/bottom -->
         <Thickness x:Key="MarginTile">4</Thickness>               <!-- thumbnail tile outer margin -->
         <Thickness x:Key="MarginGridPanel">8</Thickness>          <!-- justified grid panel inset -->
