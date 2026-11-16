@@ -1207,12 +1207,11 @@ public partial class MainWindow : Window
             await Task.Delay(10);
         if (idx + 1 >= Vm.Columns.Count || Vm.Columns[idx + 1] != target) return;
 
+        // Auto-select the first item without suppressing ColumnPanel_SelectionChanged, so if
+        // it's a folder its contents are exposed in the next column right away (one level
+        // only — that handler opens the folder but doesn't select into it).
         if (target.SelectedItem == null && target.Items.Count > 0)
-        {
-            _suppressColumnAutoOpen = true;
             target.SelectedItem = target.Items[0];
-            _suppressColumnAutoOpen = false;
-        }
 
         FocusColumn(target);
     }
