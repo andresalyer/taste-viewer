@@ -927,6 +927,26 @@ public partial class MainWindow : Window
                 { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
         };
         SearchPill.BeginAnimation(WidthProperty, anim);
+
+        // Fade fill/outline from the pill look to the path bar's, so the open field reads as an input.
+        var fill    = OwnBrush(SearchPill.Background);
+        var outline = OwnBrush(SearchPill.BorderBrush);
+        SearchPill.Background  = fill;
+        SearchPill.BorderBrush = outline;
+        FadeBrush(fill,    open ? "BgDeep"        : "PillBg",     anim.Duration, anim.EasingFunction);
+        FadeBrush(outline, open ? "BorderDefault" : "PillBorder", anim.Duration, anim.EasingFunction);
+    }
+
+    // XAML StaticResource brushes are frozen; swap in an animatable copy once.
+    private static SolidColorBrush OwnBrush(Brush current) =>
+        current is SolidColorBrush { IsFrozen: false } b ? b : new SolidColorBrush(((SolidColorBrush)current).Color);
+
+    private void FadeBrush(SolidColorBrush brush, string targetKey, Duration duration,
+                           System.Windows.Media.Animation.IEasingFunction easing)
+    {
+        var to = ((SolidColorBrush)FindResource(targetKey)).Color;
+        brush.BeginAnimation(SolidColorBrush.ColorProperty,
+            new System.Windows.Media.Animation.ColorAnimation(to, duration) { EasingFunction = easing });
     }
 
     private void ToolbarDock_SizeChanged(object sender, SizeChangedEventArgs e)
