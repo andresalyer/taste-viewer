@@ -130,8 +130,16 @@ public partial class MainWindow : Window
         }
 
         if (e.PropertyName == nameof(MainViewModel.CurrentPath))
+        {
+            // The breadcrumb stays clickable during search; search is scoped to the
+            // current folder, so leaving it makes the results stale.
+            if (Vm.IsSearching) Vm.ExitSearchMode();
             Dispatcher.BeginInvoke(BreadcrumbScroller.ScrollToRightEnd,
                 System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        if (e.PropertyName == nameof(MainViewModel.IsSearching))
+            AnimateSearchPill(Vm.IsSearching);
 
         if (e.PropertyName == nameof(MainViewModel.IsSidebarOpen))
             ApplySidebarState(Vm.IsSidebarOpen);
@@ -277,7 +285,9 @@ public partial class MainWindow : Window
         // the edit-mode Grid then occupies the same spot search's UI just vacated, so the
         // "search" the user thinks they're still looking at (including its close button)
         // is actually path-edit mode's own text field and clear button.
-        if (Vm.IsPathEditing || Vm.IsSearching) return;
+        // Search now has its own pill outside this container, so clicking the path bar
+        // while searching switches to path editing (which closes search).
+        if (Vm.IsPathEditing) return;
 
         // If the click landed on a breadcrumb button let it navigate normally
         var src = e.OriginalSource as DependencyObject;
@@ -899,6 +909,52 @@ public partial class MainWindow : Window
     }
 
     private void SearchClose_Click(object sender, RoutedEventArgs e) => Vm.ExitSearchMode();
+
+    // Collapsed = border (2) + icon button (10 + 14 + 10).
+    private const double SearchPillClosedWidth = 36;
+
+    // Open width scales with the toolbar so the path bar keeps a usable share on narrow windows.
+    private double SearchPillOpenWidth() =>
+        Math.Clamp(ToolbarDock.ActualWidth * 0.3, 200, 360);
+
+    private void AnimateSearchPill(bool open)
+    {
+        var anim = new System.Windows.Media.Animation.DoubleAnimation(
+            open ? SearchPillOpenWidth() : SearchPillClosedWidth,
+            TimeSpan.FromMilliseconds(180))
+        {
+            EasingFunction = new System.Windows.Media.Animation.CubicEase
+                { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+        };
+        SearchPill.BeginAnimation(WidthProperty, anim);
+
+        // Fade fill/outline from the pill look to the path bar's, so the open field reads as an input.
+        var fill    = OwnBrush(SearchPill.Background);
+        var outline = OwnBrush(SearchPill.BorderBrush);
+        SearchPill.Background  = fill;
+        SearchPill.BorderBrush = outline;
+        FadeBrush(fill,    open ? "BgDeep"        : "PillBg",     anim.Duration, anim.EasingFunction);
+        FadeBrush(outline, open ? "BorderDefault" : "PillBorder", anim.Duration, anim.EasingFunction);
+    }
+
+    // XAML StaticResource brushes are frozen; swap in an animatable copy once.
+    private static SolidColorBrush OwnBrush(Brush current) =>
+        current is SolidColorBrush { IsFrozen: false } b ? b : new SolidColorBrush(((SolidColorBrush)current).Color);
+
+    private void FadeBrush(SolidColorBrush brush, string targetKey, Duration duration,
+                           System.Windows.Media.Animation.IEasingFunction easing)
+    {
+        var to = ((SolidColorBrush)FindResource(targetKey)).Color;
+        brush.BeginAnimation(SolidColorBrush.ColorProperty,
+            new System.Windows.Media.Animation.ColorAnimation(to, duration) { EasingFunction = easing });
+    }
+
+    private void ToolbarDock_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (!Vm.IsSearching || !e.WidthChanged) return;
+        SearchPill.BeginAnimation(WidthProperty, null); // drop the held animation value
+        SearchPill.Width = SearchPillOpenWidth();
+    }
 
     private void SearchBar_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {

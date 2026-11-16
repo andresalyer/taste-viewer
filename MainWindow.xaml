@@ -622,7 +622,8 @@
 
         <!-- ═══ TOOLBAR ═══ -->
         <Border Grid.Row="0" Background="{StaticResource BgToolbar}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,0,1">
-            <DockPanel Margin="{StaticResource PaddingToolbarH}" VerticalAlignment="Center" LastChildFill="True">
+            <DockPanel x:Name="ToolbarDock" SizeChanged="ToolbarDock_SizeChanged"
+                       Margin="{StaticResource PaddingToolbarH}" VerticalAlignment="Center" LastChildFill="True">
 
                 <!-- Nav + sidebar pills -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
@@ -687,10 +688,85 @@
                 <!-- Right-side pills -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
 
-                    <!-- Search pill -->
-                    <Border Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
-                            CornerRadius="{StaticResource PillRadius}" Height="28" VerticalAlignment="Center">
-                        <Button x:Name="SearchBtn" Click="SearchBtn_Click" ToolTip="Search this folder (Ctrl+F)"
+                    <!-- Search pill: collapsed it's just the icon. Opening search animates its Width
+                         (AnimateSearchPill in code-behind) so the path bar to its left shrinks to
+                         make room; closing shrinks it back to the icon. -->
+                    <Border x:Name="SearchPill" Background="{StaticResource PillBg}" BorderBrush="{StaticResource PillBorder}" BorderThickness="1"
+                            CornerRadius="{StaticResource PillRadius}" Height="28" Width="36" VerticalAlignment="Center" ClipToBounds="True">
+                        <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding CurrentFolderName, StringFormat=Search {0}}"
+                                   Foreground="{StaticResource FgMuted}"
+                                   FontSize="14"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsSearching}" Value="True"/>
+                                                <Condition Binding="{Binding SearchQuery}" Value=""/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBox Grid.Column="1" x:Name="SearchBar"
+                                 Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                 Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}"
+                                 AutomationProperties.Name="Search query"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource FgPrimary}"
+                                 CaretBrush="{StaticResource FgPrimary}"
+                                 BorderThickness="0"
+                                 FontSize="14"
+                                 VerticalAlignment="Center"
+                                 KeyDown="SearchBar_KeyDown"
+                                 IsVisibleChanged="SearchBar_IsVisibleChanged"/>
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding SearchStatusText}"
+                                   Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}"
+                                   Foreground="{StaticResource FgSecondary}"
+                                   FontSize="12"
+                                   Margin="8,0,0,0"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False"/>
+                        <!-- Close button -->
+                        <Button Grid.Column="3"
+                                VerticalAlignment="Center"
+                                Margin="4,0,8,0"
+                                Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}"
+                                Click="SearchClose_Click"
+                                ToolTip="Close search"
+                                AutomationProperties.Name="Close search"
+                                Focusable="False"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="4">
+                                        <Path x:Name="Icon" Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{StaticResource FgIconSubtle}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
+                                            <Setter TargetName="Icon" Property="Stroke" Value="{StaticResource FgInput}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Grid.Column="0" x:Name="SearchBtn" Click="SearchBtn_Click" ToolTip="Search this folder (Ctrl+F)"
                                 AutomationProperties.Name="Search this folder"
                                 Foreground="{StaticResource FgIcon}" Cursor="Hand" Focusable="False">
                             <Button.Template>
@@ -699,9 +775,6 @@
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding IsSearching}" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                        </DataTrigger>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
                                         </Trigger>
@@ -713,6 +786,7 @@
                             </Button.Template>
                             <Path Width="14" Height="14" Data="{StaticResource IconSearch}" Stroke="{StaticResource FgIcon}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
                         </Button>
+                        </Grid>
                     </Border>
 
                     <!-- View pill: grid+chevron | columns | list -->
@@ -988,61 +1062,6 @@
                                     Command="{Binding ClearPathBarCommand}"
                                     ToolTip="Clear"
                                     AutomationProperties.Name="Clear"
-                                    Focusable="False"
-                                    Cursor="Hand">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="4">
-                                            <Path x:Name="Icon" Width="10" Height="10" Data="{StaticResource IconX}" Stroke="{StaticResource FgIconSubtle}" StrokeThickness="{StaticResource IconStrokeThickness}" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource OverlayHover}"/>
-                                                <Setter TargetName="Icon" Property="Stroke" Value="{StaticResource FgInput}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </Grid>
-
-                        <!-- Search mode -->
-                        <Grid Margin="{StaticResource PaddingPathBar}"
-                              Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding CurrentFolderName, StringFormat=Search {0}}"
-                                       Foreground="{StaticResource FgMuted}"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"
-                                       IsHitTestVisible="False"
-                                       Visibility="{Binding SearchQuery, Converter={StaticResource NullToHide}}"/>
-                            <TextBox x:Name="SearchBar"
-                                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
-                                     Background="Transparent"
-                                     Foreground="{StaticResource FgPrimary}"
-                                     CaretBrush="{StaticResource FgPrimary}"
-                                     BorderThickness="0"
-                                     FontSize="14"
-                                     VerticalAlignment="Center"
-                                     KeyDown="SearchBar_KeyDown"
-                                     IsVisibleChanged="SearchBar_IsVisibleChanged"/>
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding SearchStatusText}"
-                                       Foreground="{StaticResource FgSecondary}"
-                                       FontSize="12"
-                                       Margin="8,0,0,0"
-                                       VerticalAlignment="Center"
-                                       IsHitTestVisible="False"/>
-                            <!-- Close button -->
-                            <Button Grid.Column="2"
-                                    VerticalAlignment="Center"
-                                    Click="SearchClose_Click"
-                                    ToolTip="Close search"
-                                    AutomationProperties.Name="Close search"
                                     Focusable="False"
                                     Cursor="Hand">
                                 <Button.Template>
