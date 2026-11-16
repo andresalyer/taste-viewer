@@ -48,6 +48,7 @@ public partial class MainWindow : Window
             SidebarWidth  = Vm.IsSidebarOpen ? SidebarColumn.ActualWidth : _sidebarWidth,
             PinnedFolders          = Vm.PinnedFolders.Select(p => p.FullPath).ToList(),
             ExplorerSpacebarEnabled = ((App)Application.Current).Watcher.ExplorerSpacebarEnabled,
+            DefaultPinsSeeded       = true, // OnLoaded has always run the first-run seed by now
         });
         // Preview is an app-lifetime singleton — without this, every closed secondary
         // window (Ctrl+N) stays rooted by its CurrentFileChanged subscription forever,
@@ -79,6 +80,13 @@ public partial class MainWindow : Window
         foreach (var path in s.PinnedFolders)
             Vm.PinnedFolders.Add(new PinnedFolderViewModel(path));
 
+        // First run: give new users a starting point in the sidebar. Only seeded once
+        // (and only into an empty list) so it never overrides a user's own pins or comes
+        // back after they remove it.
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!s.DefaultPinsSeeded && Vm.PinnedFolders.Count == 0 && System.IO.Directory.Exists(home))
+            Vm.PinnedFolders.Add(new PinnedFolderViewModel(home));
+
         // Sync sort menu checkmarks to default sort (Name, Ascending)
         foreach (MenuItem item in new[] { SortName, SortDate, SortType, SortSize })
             item.IsChecked = item.Header.ToString() == Vm.SelectedSort;
@@ -95,15 +103,11 @@ public partial class MainWindow : Window
             ApplySidebarState(true);
         }
 
-        // Navigate to last folder or default. A brand-new user (no pinned folders yet)
-        // has no "last folder" either, so drop them somewhere familiar instead of My Pictures.
-        string? start = System.IO.Directory.Exists(s.LastFolder) ? s.LastFolder : null;
-        if (start == null)
-        {
-            start = Vm.PinnedFolders.Count == 0
-                ? @"C:\"
-                : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        }
+        // Navigate to last folder, else the user's home folder (matches the default pin),
+        // else the system drive.
+        string start = System.IO.Directory.Exists(s.LastFolder) ? s.LastFolder
+                     : System.IO.Directory.Exists(home)         ? home
+                     : @"C:\";
 
         if (System.IO.Directory.Exists(start))
             Vm.Navigate(start);
