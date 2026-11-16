@@ -1150,6 +1150,11 @@ public partial class MainWindow : Window
                             _suppressColumnAutoOpen = false;
                         }
                     }
+                    // Finder-style back: leave this column visible (it's the contents of the
+                    // folder selected in prev) but drop its selection and anything to its right,
+                    // so the active highlight moves back a column in a single key press.
+                    Vm.CloseColumnsAfter(col);
+                    col.SelectedItem = null;
                     FocusColumn(prev);
                 }
                 else
