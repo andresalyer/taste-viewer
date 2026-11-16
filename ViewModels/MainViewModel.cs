@@ -336,12 +336,12 @@ public class MainViewModel : ObservableObject, IDisposable
         set
         {
             if (!SetField(ref _isSearching, value)) return;
-            OnPropertyChanged(nameof(IsBreadcrumbMode));
             OnPropertyChanged(nameof(ShowSearchResults));
         }
     }
 
-    public bool IsBreadcrumbMode => !IsPathEditing && !IsSearching;
+    // Search lives in its own expanding pill, so the breadcrumb stays visible while searching.
+    public bool IsBreadcrumbMode => !IsPathEditing;
 
     // Entering search mode alone shouldn't blank out the folder the user is currently
     // looking at — keep showing it (so e.g. a filename is still visible to reference)
@@ -535,7 +535,7 @@ public class MainViewModel : ObservableObject, IDisposable
 
     public void EnterPathEditMode()
     {
-        IsSearching   = false;
+        if (IsSearching) ExitSearchMode(); // full exit so a stale query isn't there on reopen
         PathBarText   = _currentPath;
         IsPathEditing = true;
     }
