@@ -159,14 +159,22 @@ public class MainViewModel : ObservableObject, IDisposable
 
     public void ColumnFolderOpened(ColumnViewModel source, FileItemViewModel folder)
     {
+        CloseColumnsAfter(source);
+        AppendColumn(folder.FullPath);
+    }
+
+    // Removes every column to the right of `source` (source itself stays).
+    public void CloseColumnsAfter(ColumnViewModel source)
+    {
         int idx = Columns.IndexOf(source);
+        if (idx < 0) return;
         while (Columns.Count > idx + 1)
         {
             Columns[^1].PropertyChanged -= ColumnViewModel_PropertyChanged;
             Columns[^1].Dispose();
             Columns.RemoveAt(Columns.Count - 1);
         }
-        AppendColumn(folder.FullPath);
+        RecomputeColumnSelectionStates();
     }
 
     private void ColumnViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
